@@ -68,11 +68,11 @@ def H_agent_q_to_r(params, substep, state_history, prev_state, policy_input):
     agent_id = policy_input['agent_id']
     agents =  copy.deepcopy(prev_state['hydra_agents'])
     H_chosen_agent = agents[agents['m']==agent_id]
-    print('H_chosen_agent', H_chosen_agent)
+    # print('H_chosen_agent', H_chosen_agent)
     asset_id = policy_input['asset_id'] # defines asset subscript
     pool = prev_state['pool']
     delta_Q = policy_input['q_sold'] #amount of Q being sold by the user
-    print('delta_Q', delta_Q)
+    #print('delta_Q', delta_Q)
 
     Q = prev_state['Q']
     Y = prev_state['Y']
@@ -98,7 +98,7 @@ def H_agent_r_to_r_swap(params, substep, state_history, prev_state, policy_input
     This function updates Hydra agent states when one risk asset is traded for another risk asset
     Deepcopy fixes double resolution error
     """
-    print(' R to R swap called ')
+    # print(' R to R swap called ')
     agent_id = policy_input['agent_id']
     agents =  copy.deepcopy(prev_state['hydra_agents'])
     H_chosen_agent = agents[agents['m']==agent_id]
