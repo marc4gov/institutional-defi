@@ -5,8 +5,7 @@ State variables are defined here.
 - asset parameters (asset dataframe)
 - potential new asset parameters (new_asset dataframe)
 
-- the Hydra pool
-- all Uniswap pools
+- White and Grey Uniswap pools
 - the initial state object
 """
 
@@ -55,12 +54,12 @@ a = temp_a
 def initial_price_in_Q(R, C, Q, Y, a):
     return (Q * Y**(a)) * (C / R**(a+1))
 
-pool = V2_Asset('i', initial_values['Ri'], initial_values['Ci'],
-        initial_price_in_Q(initial_values['Ri'], initial_values['Ci'], initial_values['Q'], initial_values['Y'], a)
-)
-pool.add_new_asset('j', initial_values['Rj'], initial_values['Cj'],
-        initial_price_in_Q(initial_values['Rj'], initial_values['Cj'], initial_values['Q'], initial_values['Y'], a)
-)
+# pool = V2_Asset('i', initial_values['Ri'], initial_values['Ci'],
+#         initial_price_in_Q(initial_values['Ri'], initial_values['Ci'], initial_values['Q'], initial_values['Y'], a)
+# )
+# pool.add_new_asset('j', initial_values['Rj'], initial_values['Cj'],
+#         initial_price_in_Q(initial_values['Rj'], initial_values['Cj'], initial_values['Q'], initial_values['Y'], a)
+# )
 
 # JS July 8th, 2021: Adding of asset 'k' should be done consistently with V2 Spec--perhaps in sys_params.py as an 'equal player' to assets 'i' and 'j'
 #pool.add_new_asset('k', initial_values['Rj'], initial_values['Sj'], (initial_values['Q']/initial_values['Sq'])/(initial_values['Rj']/initial_values['Sj']))

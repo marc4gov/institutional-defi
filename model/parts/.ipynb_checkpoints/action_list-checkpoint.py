@@ -1,6 +1,5 @@
 # Behaviors
-# from hydra_multi_class.model.sys_params import ACTION_LIST
-import numpy as np
+# from hydra_multi_class.model.sys_params import ACTION_LISTimport numpy as np
 import random
 import math
 
@@ -35,12 +34,36 @@ def actionDecoder(params, step, history, prev_state):
  
 
     ############# CREATE AGENT ID's ################    
+    
+    ############# WHITE POOL AGENTS ########################
     agent0_id = 0
     agent1_id = 1
     agent2_id = 2
     agent3_id = 3
     agent4_id = 4
+    ############# WHITE & GREY POOL AGENTS #################
     agent5_id = 5    
+    agent6_id = 6
+    agent7_id = 7
+    agent8_id = 8
+    agent9_id = 9
+    ############# GREY POOL AGENTS #########################
+    agent10_id = 10
+    agent11_id = 11      
+    agent12_id = 12
+    agent13_id = 13
+    agent14_id = 14
+    agent15_id = 15    
+    agent16_id = 16
+    agent17_id = 17
+    agent18_id = 18
+    agent19_id = 19    
+    agent20_id = 20
+    agent21_id = 21      
+    agent22_id = 22
+    agent23_id = 23
+    agent24_id = 24  
+    
     
     if params['exo_random_sequence'] == 'on':
         agent3_id = 2

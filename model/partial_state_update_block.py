@@ -7,26 +7,47 @@ Here the partial state update blocks are configurated by setting
 
 for each state update block individually
 """
-from .parts.uniswap import *
-from .parts.metrics import *
-from .parts.action_list import *
-from .parts.v2_hydra import *
+from .parts.polimechs.liquidity_provision import *
+from .parts.polimechs.arbitrage import *
+from .parts.polimechs.accounting import *
+
 partial_state_update_block = [
-    {
-    #     # Resolve H and Weights
+    
+     {
+        # main policy is to provide liquidity
         'policies': {
-    #         # 'external_action': exogoneous_process
+            'liquidity_provision': p_liquidity_provision
         },
         'variables': {
-    #         # UNISWAP WORLD
-            # 'H': s_resolve_H,
-            # 'asset' : s_asset_weight,
-            'asset_random_choice': s_asset_random,
-            'trade_random_size': s_trade_random,
-            'trade_random_direction': s_direction_random,
-        }
-    },
-     #{
+            'agents': s_liquidity_provision,
+            'state': s_accounting
+     },     
+     {
+        # other policy is to seek for arbitrage 
+        'policies': {
+            'arbitrage': p_arbitrage
+        },
+        'variables': {
+            'agents': s_arbitrage,
+            'state': s_accounting
+     },
+    
+    
+    # {
+    # #     # Resolve H and Weights
+    #     'policies': {
+    # #         # 'external_action': exogoneous_process
+    #     },
+    #     'variables': {
+    # #         # UNISWAP WORLD
+    #         # 'H': s_resolve_H,
+    #         # 'asset' : s_asset_weight,
+    #         'asset_random_choice': s_asset_random,
+    #         'trade_random_size': s_trade_random,
+    #         'trade_random_direction': s_direction_random,
+    #     }
+    # },
+     # {
      #    # uniswap.py asset i AND j
      #    'policies': {
      #        'user_action': actionDecoder
@@ -43,25 +64,25 @@ partial_state_update_block = [
      #        'UNI_ij': mechanismHub_ij,
      #        'UNI_ji': mechanismHub_ji,
      #    }
-     #},
+     # },
 
-        {
-        ############ v2_hydra.py  #################################################
-        'policies': {
-            'user_action': actionDecoder
-        },
-        'variables': {
-            # HYDRA WORLD
-            # 'asset' : mechanismHub_asset,
-            'Sq' : mechanismHub_Sq,
-            'Q' : mechanismHub_Q_Hydra, 
-            'H': mechanismHub_H_Hydra,
-            'Y' : mechanismHub_Y,
-            'hydra_agents': H_agenthub,
-            'pool': mechanismHub_pool, # must be last or else updated would be used in omnipool updates
-            'purchased_asset_id': s_purchased_asset_id, # writes from the action policy the outgoing risk asset
-        }
-    },
+#         {
+#         ############ v2_hydra.py  #################################################
+#         'policies': {
+#             'user_action': actionDecoder
+#         },
+#         'variables': {
+#             # HYDRA WORLD
+#             # 'asset' : mechanismHub_asset,
+#             'Sq' : mechanismHub_Sq,
+#             'Q' : mechanismHub_Q_Hydra, 
+#             'H': mechanismHub_H_Hydra,
+#             'Y' : mechanismHub_Y,
+#             'hydra_agents': H_agenthub,
+#             'pool': mechanismHub_pool, # must be last or else updated would be used in omnipool updates
+#             'purchased_asset_id': s_purchased_asset_id, # writes from the action policy the outgoing risk asset
+#         }
+#     },
         ############ v2_hydra.py  #################################################
     {
         # Metrics
