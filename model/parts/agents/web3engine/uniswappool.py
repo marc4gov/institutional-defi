@@ -4,14 +4,15 @@ import requests
 import uuid
 
 from enum import Enum
+
 class TradeType(Enum):
     EXACT_INPUT = 1
     EXACT_OUTPUT = 2
 
 class Rounding(Enum):
-    ROUND_DOWN,
-    ROUND_HALF_UP,
-    ROUND_UP   
+    ROUND_DOWN = 1
+    ROUND_HALF_UP = 2
+    ROUND_UP = 3
 
     
 SWAP_FEE = 0.003
@@ -56,7 +57,7 @@ class Pair():
         else:
             return self.reserve1
     
-    def getOutputAmount(inputAmount: TokenAmount) -> (TokenAmount, Pair):
+    def getOutputAmount(inputAmount: TokenAmount) -> (TokenAmount, [TokenAmount]):
         inputReserve = self.reserveOf(inputAmount.token).amount
         outputtoken = self.token1.token
         if inputAmount.token == self.token1.token:
@@ -67,9 +68,9 @@ class Pair():
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
         # (Rα − ∆α) = k/(Rβ + γ∆β) => ∆α = Rα - k/(Rβ + γ∆β)
         output = ouputReserve - k/(inputReserve + gamma*inputAmount.amount)
-        return (TokenAmount(outputtoken, output), Pair(TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputtoken, outputReserve - output))
+        return (TokenAmount(outputtoken, output), [TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputtoken, outputReserve - output)])
 
-    def getInputAmount(outputAmount: TokenAmount) -> (TokenAmount, Pair):
+    def getInputAmount(outputAmount: TokenAmount) -> (TokenAmount, [TokenAmount]):
         outputReserve = self.reserveOf(outputAmount.token).amount
         inputtoken = self.token0.token
         if outputAmount.token == self.token0.token:
@@ -81,7 +82,7 @@ class Pair():
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
         # (Rβ + γ∆β) = k/(Rα − ∆α) => ∆β =  (k/(Rα − ∆α) - Rβ)/γ
         inputAm = (k/(outputReserve - outputAmount.amount) - inputReserve)/gamma
-        return ( TokenAmount(inputtoken, inputAm),  Pair( TokenAmount(inputtoken, inputReserve + inputAm),  TokenAmount(outputAmount.token, outputReserve - outputAmount.amount))                
+        return ( TokenAmount(inputtoken, inputAm), [TokenAmount(inputtoken, inputReserve + inputAm),  TokenAmount(outputAmount.token, outputReserve - outputAmount.amount)])                
                 
 
     def getLiquidityMinted(totalSupply: TokenAmount, tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) -> TokenAmount:
@@ -97,24 +98,17 @@ class Pair():
                 liquidity = amount1
         return  Token(totalSupply.token, liquidity)
             
-    def getLiquidityValue(token: Token, totalSupply: TokenAmount, liquidity: TokenAmount, feeOn: bool = False) -> TokenAmount
-        return  TokenAmount(token, (liquidity.amount * token.amount) / totalSupply.amount))
+    def getLiquidityValue(token: Token, totalSupply: TokenAmount, liquidity: TokenAmount, feeOn: bool = False) -> TokenAmount:
+        return  TokenAmount(token, (liquidity.amount * token.amount) / totalSupply.amount)
                 
-                
-
-                          
-                          
+              
 class Route():
     def __init__(self, route_id: str, symbol: str, name: str):
         self.token_id = token_id
         self.symbol = symbol
         self.name = name
-
-class Price():
-               
                           
 # event & utility classes
-                          
 class User():
     def __init__(self, uid: str, liquidityPositions: [LiquidityPosition], usdSwapped: int):
         self.uid = uid

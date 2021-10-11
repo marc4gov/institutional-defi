@@ -4,9 +4,9 @@ log = logging.getLogger('poolagents')
 from enforce_typing import enforce_types # type: ignore[import]
 import random
 
-from agents.BaseAgent import BaseAgent
-from web3engine import uniswappool
-from web3tools.web3util import toBase18
+from .BaseAgent import BaseAgent
+from .web3engine import uniswappool
+from .web3tools.web3util import toBase18
             
 @enforce_types
 class PoolAgent(BaseAgent):    
@@ -26,12 +26,12 @@ class PoolAgent(BaseAgent):
         new_amount0 = pair.token0.token.amount + tokenAmount0.amount
         new_amount1 = pair.token1.token.amount + tokenAmount1.amount
         
-        new_pair= new Pair(new TokenAmount(pair.token0.token, new_amount0), new TokenAmount(pair.token1.token, new_amount1)
+        new_pair= Pair(TokenAmount(pair.token0.token, new_amount0), TokenAmount(pair.token1.token, new_amount1))
         
         # should we do this?
         new_pair.txCount = pair.txCount + 1
         
-        new_pair.liquidityToken = new TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidity.amount) 
+        new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidity.amount) 
         self._pool.pair = new_pair
         return liquidity
         

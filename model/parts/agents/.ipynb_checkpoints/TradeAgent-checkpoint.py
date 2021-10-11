@@ -4,8 +4,8 @@ log = logging.getLogger('marketagents')
 from enforce_typing import enforce_types # type: ignore[import]
 import random
 
-from agents.BaseAgent import BaseAgent
-from agents.PoolAgent import PoolAgent
+from .BaseAgent import BaseAgent
+from .PoolAgent import PoolAgent
 from util import constants
 # from util.constants import POOL_WEIGHT_DT, POOL_WEIGHT_OCEAN
 from web3engine import uniswappool
