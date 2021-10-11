@@ -4,7 +4,8 @@ import configparser, os
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(CONF_FILE_PATH))
 
-SAFETY = config['general'].getboolean('safety')
+# SAFETY = config['general'].getboolean('safety')
+SAFETY = False
 assert SAFETY is not None
 
 import logging

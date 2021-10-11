@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from enforce_typing import enforce_types # type: ignore[import]
 import typing
 
-from agents import AgentWallet
-from web3engine import unipool, datatoken, globaltokens
-from util.constants import SAFETY
-from util.strutil import StrMixin
-from web3tools.web3util import toBase18
+from . import AgentWallet
+# from web3engine import unipool, datatoken, globaltokens
+from .util.constants import SAFETY
+from .util.strutil import StrMixin
+from .web3tools.web3util import toBase18
 
 @enforce_types
 class BaseAgent(ABC, StrMixin):
@@ -53,15 +53,15 @@ class BaseAgent(ABC, StrMixin):
     #=======================================================================
     #pool-related
     
-    def UNI(self, pool:unipool.UNIPool) -> float:
-        return self._wallet.UNI(pool)
+#     def UNI(self, pool:unipool.UNIPool) -> float:
+#         return self._wallet.UNI(pool)
 
-    def addLiquidity(self, amount:float, pool:unipool.UNIPool):
-        self._wallet.addLiquidity(lp, pool)
+#     def addLiquidity(self, amount:float, pool:unipool.UNIPool):
+#         self._wallet.addLiquidity(lp, pool)
 
-    def removeLiquidity(self, amount:float, pool:unipool.UNIPool):
-        self._wallet.removeLiquidity(amount, pool)
+#     def removeLiquidity(self, amount:float, pool:unipool.UNIPool):
+#         self._wallet.removeLiquidity(amount, pool)
         
-    def swap():
-        pass
+#     def swap():
+#         pass
                             

@@ -1,9 +1,23 @@
 from enforce_typing import enforce_types # type: ignore[import]
 import typing
 import requests
+import uuid
 
+from enum import Enum
+class TradeType(Enum):
+    EXACT_INPUT = 1
+    EXACT_OUTPUT = 2
+
+class Rounding(Enum):
+    ROUND_DOWN,
+    ROUND_HALF_UP,
+    ROUND_UP   
+
+    
+SWAP_FEE = 0.003
 # from web3tools import web3util, web3wallet
 # from .btoken import BToken
+
 
 class Token():
     def __init__(self, token_id: str, symbol: str, name: str):
@@ -11,25 +25,96 @@ class Token():
         self.symbol = symbol
         self.name = name
 
+class TokenAmount():
+    def __init__(self, token: Token, amount: float):
+        self.token = token
+        self.amount = amount
+        
 class Pair():
-    def __init__(self, pid: str, token0: Token, token1: Token, reserve0: float, reserve1: float, 
-                token0Price: float, token1Price: float, volumeUSD: float, txCount: int):
-        self.pid = pid
+    def __init__(self, token0: TokenAmount, token1: TokenAmount):
         self.token0 = token0
         self.token1 = token1
-        self.reserve0 = reserve0
-        self.reserve1 = reserve1
-        
-        r0 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token0.symbol + "&tsyms=USD")
-        res0USD = r0.json()['USD']
-        r1 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token1.symbol + "&tsyms=USD")
-        res1USD = r1.json()['USD']
-        self.reserveUSD = res0 + res1
-        self.token0Price = reserve0/reserve1
-        self.token1Price = reserve1/reserve0
-        self.volumeUSD = self.reserveUSD
+        liquidity = Math.sqrt(token0.amount*token1.amount)
+        self.liquidityToken = TokenAmount(Token(uuid.uuid4(), 'UNI-V2', 'Uniswap V2'), liquidity)
         self.txCount = 1
         
+    def token0Price() -> float:
+        return self.token1.token.amount/self.token0.token.amount
+    
+    def token1Price() -> float:
+        return self.token0.token.amount/self.token1.token.amount
+    
+    def reserve0() -> TokenAmount:
+        return self.token0
+    
+    def reserve1() -> TokenAmount:
+        return self.token1
+    
+    def reserveOf(token: Token) -> TokenAmount:
+        if token == self.token0.token:
+            return self.reserve0
+        else:
+            return self.reserve1
+    
+    def getOutputAmount(inputAmount: TokenAmount) -> (TokenAmount, Pair):
+        inputReserve = self.reserveOf(inputAmount.token).amount
+        outputtoken = self.token1.token
+        if inputAmount.token == self.token1.token:
+            outputtoken = self.token0.token
+        outputReserve = self.reserveOf(outputtoken).amount
+        k = inputReserve * outputReserve
+        gamma = 1 - SWAP_FEE
+        # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
+        # (Rα − ∆α) = k/(Rβ + γ∆β) => ∆α = Rα - k/(Rβ + γ∆β)
+        output = ouputReserve - k/(inputReserve + gamma*inputAmount.amount)
+        return (TokenAmount(outputtoken, output), Pair(TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputtoken, outputReserve - output))
+
+    def getInputAmount(outputAmount: TokenAmount) -> (TokenAmount, Pair):
+        outputReserve = self.reserveOf(outputAmount.token).amount
+        inputtoken = self.token0.token
+        if outputAmount.token == self.token0.token:
+            inputtoken = self.token1.token
+        inputReserve = self.reserveOf(inputtoken).amount
+        k = inputReserve * outputReserve
+        gamma = 1 - SWAP_FEE
+        
+        # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
+        # (Rβ + γ∆β) = k/(Rα − ∆α) => ∆β =  (k/(Rα − ∆α) - Rβ)/γ
+        inputAm = (k/(outputReserve - outputAmount.amount) - inputReserve)/gamma
+        return ( TokenAmount(inputtoken, inputAm),  Pair( TokenAmount(inputtoken, inputReserve + inputAm),  TokenAmount(outputAmount.token, outputReserve - outputAmount.amount))                
+                
+
+    def getLiquidityMinted(totalSupply: TokenAmount, tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) -> TokenAmount:
+        liquidity = 0
+        if totalSupply.amount == 0:
+            liquidity = Math.sqrt(tokenAmountA.amount*tokenAmountB.amount)
+        else:
+            amount0 = (tokenAmountA.amount*totalSupply.amount)/self.reserve0.amount
+            amount1 = (tokenAmounBA.amount*totalSupply.amount)/self.reserve1.amount
+            if amount0 <= amount1:
+                liquidity = amount0
+            else:
+                liquidity = amount1
+        return  Token(totalSupply.token, liquidity)
+            
+    def getLiquidityValue(token: Token, totalSupply: TokenAmount, liquidity: TokenAmount, feeOn: bool = False) -> TokenAmount
+        return  TokenAmount(token, (liquidity.amount * token.amount) / totalSupply.amount))
+                
+                
+
+                          
+                          
+class Route():
+    def __init__(self, route_id: str, symbol: str, name: str):
+        self.token_id = token_id
+        self.symbol = symbol
+        self.name = name
+
+class Price():
+               
+                          
+# event & utility classes
+                          
 class User():
     def __init__(self, uid: str, liquidityPositions: [LiquidityPosition], usdSwapped: int):
         self.uid = uid
@@ -114,226 +199,3 @@ class UniswapPool():
         return "\n".join(s)
 
         
-    #==== Price Functions
-
-    def getSpotPrice(self) -> (float, float):
-        return (self.token0Price, self.token1Price)
-
-    #==== Trading and Liquidity Functions
-
-    def joinPool(
-            self,
-            poolAmountOut_base: int,
-            maxAmountsIn_base: typing.List[int],
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Join the pool, getting `poolAmountOut` pool tokens. This will pull some
-        of each of the currently trading tokens in the pool, meaning you must 
-        have called `approve` for each token for this pool. These values are
-        limited by the array of `maxAmountsIn` in the order of the pool tokens.
-        """
-        func = self.f.joinPool(poolAmountOut_base, maxAmountsIn_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-
-    def exitPool(
-            self,
-            poolAmountIn_base: int,
-            minAmountsOut_base : typing.List[int],
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Exit the pool, paying `poolAmountIn` pool tokens and getting some of 
-        each of the currently trading tokens in return. These values are 
-        limited by the array of `minAmountsOut` in the order of the pool tokens.
-        """
-        func = self.f.exitPool(poolAmountIn_base, minAmountsOut_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-        
-    def swapExactAmountIn(
-            self,
-            tokenIn_address: str,
-            tokenAmountIn_base: int,
-            tokenOut_address: str,
-            minAmountOut_base: int,
-            maxPrice_base: int,
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Trades an exact `tokenAmountIn` of `tokenIn` taken from the caller by 
-        the pool, in exchange for at least `minAmountOut` of `tokenOut` given 
-        to the caller from the pool, with a maximum marginal price of 
-        `maxPrice`.
-        
-        Returns `(tokenAmountOut`, `spotPriceAfter)`, where `tokenAmountOut` 
-        is the amount of token that came out of the pool, and `spotPriceAfter`
-        is the new marginal spot price, ie, the result of `getSpotPrice` after
-        the call. (These values are what are limited by the arguments; you are 
-        guaranteed `tokenAmountOut >= minAmountOut` and 
-        `spotPriceAfter <= maxPrice)`.
-        """
-        func = self.f.swapExactAmountIn(
-            tokenIn_address, tokenAmountIn_base,
-            tokenOut_address, minAmountOut_base, maxPrice_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-        
-    def swapExactAmountOut(
-            self,
-            tokenIn_address: str,
-            maxAmountIn_base: int,
-            tokenOut_address: str,
-            tokenAmountOut_base: int,
-            maxPrice_base: int,
-            from_wallet: web3wallet.Web3Wallet):
-        func = self.f.swapExactAmountOut(
-            tokenIn_address, maxAmountIn_base, tokenOut_address,
-            tokenAmountOut_base, maxPrice_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-
-    def joinswapExternAmountIn(
-            self,
-            tokenIn_address: str,
-            tokenAmountIn_base: int,
-            minPoolAmountOut_base: int,
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Pay `tokenAmountIn` of token `tokenIn` to join the pool, getting
-        `poolAmountOut` of the pool shares.
-        """
-        func = self.f.joinswapExternAmountIn(
-            tokenIn_address, tokenAmountIn_base, minPoolAmountOut_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-                  
-    def joinswapPoolAmountOut(
-            self,
-            tokenIn_address: str,
-            poolAmountOut_base: int,
-            maxAmountIn_base: int,
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Specify `poolAmountOut` pool shares that you want to get, and a token
-        `tokenIn` to pay with. This costs `maxAmountIn` tokens (these went 
-        into the pool).
-        """
-        func = self.f.joinswapPoolAmountOut(
-            tokenIn_address, poolAmountOut_base, maxAmountIn_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-
-    def exitswapPoolAmountIn(
-            self,
-            tokenOut_address: str,
-            poolAmountIn_base: int,
-            minAmountOut_base: int,
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Pay `poolAmountIn` pool shares into the pool, getting `tokenAmountOut` 
-        of the given token `tokenOut` out of the pool.
-        """
-        func = self.f.exitswapPoolAmountIn(
-            tokenOut_address, poolAmountIn_base, minAmountOut_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-        
-    def exitswapExternAmountOut(
-            self,
-            tokenOut_address: str,
-            tokenAmountOut_base: int,
-            maxPoolAmountIn_base: int,
-            from_wallet: web3wallet.Web3Wallet):
-        """
-        Specify `tokenAmountOut` of token `tokenOut` that you want to get out
-        of the pool. This costs `poolAmountIn` pool shares (these went into 
-        the pool).
-        """
-        func = self.f.exitswapExternAmountOut(
-            tokenOut_address, tokenAmountOut_base, maxPoolAmountIn_base)
-        return web3wallet.buildAndSendTx(func, from_wallet)
-        
-
-    #===== Calculators
-    def calcSpotPrice_base(
-            self,
-            tokenBalanceIn_base: int,
-            tokenWeightIn_base : int,
-            tokenBalanceOut_base: int,
-            tokenWeightOut_base : int,
-            swapFee_base : int) -> int:
-        """Returns spotPrice_base"""
-        return self.f.calcSpotPrice(
-            tokenBalanceIn_base, tokenWeightIn_base, tokenBalanceOut_base,
-            tokenWeightOut_base, swapFee_base).call()
-
-    def calcOutGivenIn_base(
-            self,
-            tokenBalanceIn_base: int,
-            tokenWeightIn_base : int,
-            tokenBalanceOut : int,
-            tokenWeightOut_base : int,
-            tokenAmountIn_base : int,
-            swapFee_base : int) -> int:
-        """Returns tokenAmountOut_base"""
-        return self.f.calcOutGivenIn(
-            tokenBalanceIn_base, tokenWeightIn_base, tokenBalanceOut, 
-            tokenWeightOut_base, tokenAmountIn_base, swapFee_base).call()
-                       
-    def calcInGivenOut_base(
-            self,
-            tokenBalanceIn_base: int,
-            tokenWeightIn_base : int,
-            tokenBalanceOut_base : int,
-            tokenWeightOut_base : int,
-            tokenAmountOut_base: int,
-            swapFee_base: int) -> int:
-        """Returns tokenAmountIn_base"""
-        return self.f.calcInGivenOut(
-            tokenBalanceIn_base, tokenWeightIn_base, tokenBalanceOut_base,
-            tokenWeightOut_base, tokenAmountOut_base, swapFee_base).call()
-    
-    def calcPoolOutGivenSingleIn_base(
-            self,
-            tokenBalanceIn_base: int,
-            tokenWeightIn_base: int,
-            poolSupply_base: int,
-            totalWeight_base: int,
-            tokenAmountIn_base: int,
-            swapFee_base: int) -> int:
-        """Returns poolAmountOut_base"""
-        return self.f.calcPoolOutGivenSingleIn(
-            tokenBalanceIn_base, tokenWeightIn_base, poolSupply_base,
-            totalWeight_base, tokenAmountIn_base, swapFee_base).call()
-    
-    def calcSingleInGivenPoolOut_base(
-            self,
-            tokenBalanceIn_base: int,
-            tokenWeightIn_base: int,
-            poolSupply_base: int,
-            totalWeight_base: int,
-            poolAmountOut_base: int,
-            swapFee_base: int) -> int:
-        """Returns tokenAmountIn_base"""
-        return self.f.calcSingleInGivenPoolOut(
-            tokenBalanceIn_base, tokenWeightIn_base, poolSupply_base,
-            totalWeight_base, poolAmountOut_base, swapFee_base).call()
-    
-    def calcSingleOutGivenPoolIn_base(
-            self,
-            tokenBalanceOut_base: int,
-            tokenWeightOut_base: int,
-            poolSupply_base: int,
-            totalWeight_base: int,
-            poolAmountIn_base: int,
-            swapFee_base: int) -> int:
-        """Returns tokenAmountOut_base"""
-        return self.f.calcSingleOutGivenPoolIn(
-            tokenBalanceOut_base, tokenWeightOut_base, poolSupply_base,
-            totalWeight_base, poolAmountIn_base, swapFee_base).call()
-            
-    def calcPoolInGivenSingleOut(
-            self,
-            tokenBalanceOut_base: int,
-            tokenWeightOut_base: int,
-            poolSupply_base: int,
-            totalWeight_base: int,
-            tokenAmountOut_base: int,
-            swapFee_base: int) -> int:
-        """Returns poolAmountIn_base"""
-        return self.f.calcPoolInGivenSingleOut(
-            tokenBalanceOut_base, tokenWeightOut_base, poolSupply_base,
-            totalWeight_base, tokenAmountOut_base, swapFee_base).call()
-    

@@ -5,8 +5,8 @@ from enforce_typing import enforce_types # type: ignore[import]
 import typing
 
 # from web3engine import bpool, datatoken, globaltokens
-from util import constants 
-from util.strutil import asCurrency
+from .util import constants 
+from .util.strutil import asCurrency
 # from web3tools import web3util, web3wallet
 # from web3tools.web3util import fromBase18, toBase18
 
@@ -66,34 +66,6 @@ class AgentWallet:
                              % (amt, self._ETH))
         self._ETH -= amt
 
-        
-        
-    def UNI(self, pool:bpool.UNIPool) -> float:
-        return fromBase18(self._UNI_base(pool))
-    
-    def _UNI_base(self, pool:unipool.UNIPool) -> int:
-        return pool.balanceOf_base(self._id)
-                
-    def stakeOCEAN(self, OCEAN_stake:float, pool:bpool.BPool):
-        OCEAN = globaltokens.OCEANtoken()
-        OCEAN.approve(pool.address, toBase18(OCEAN_stake),
-                      from_wallet=self._web3wallet)
-        pool.joinswapExternAmountIn(
-            tokenIn_address=globaltokens.OCEAN_address(),
-            tokenAmountIn_base=toBase18(OCEAN_stake),
-            minPoolAmountOut_base=toBase18(0.0),
-            from_wallet=self._web3wallet)
-        self._cached_OCEAN_base = None #reset due to write action
-        
-    def unstakeOCEAN(self, BPT_unstake:float, pool:bpool.BPool):
-        pool.exitswapPoolAmountIn(
-            tokenOut_address=globaltokens.OCEAN_address(),
-            poolAmountIn_base=toBase18(BPT_unstake),
-            minAmountOut_base=toBase18(0.0),
-            from_wallet=self._web3wallet)
-        self._cached_OCEAN_base = None #reset due to write action
-
-        
         
     #===================================================================
     def __str__(self) -> str:
