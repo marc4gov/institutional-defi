@@ -23,9 +23,9 @@ from parts.agents.PoolAgent import PoolAgent
 
 from SimStrategy import SimStrategy
 from SimState import SimState, funcOne
-from parts.util import mathutil, valuation
-from parts.util.mathutil import Range
-from parts.util.constants import *
+from parts.agents.util import mathutil, valuation
+from parts.agents.util.mathutil import Range
+from parts.agents.util.constants import *
 
 from parts.agents.web3engine import uniswappool
 

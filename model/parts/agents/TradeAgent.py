@@ -6,10 +6,10 @@ import random
 
 from .BaseAgent import BaseAgent
 from .PoolAgent import PoolAgent
-from util import constants
+from .util import constants
 # from util.constants import POOL_WEIGHT_DT, POOL_WEIGHT_OCEAN
-from web3engine import uniswappool
-from web3tools.web3util import toBase18
+from .web3engine.uniswappool import TokenAmount, Pair, UniswapPool
+from .web3tools.web3util import toBase18
         
 @enforce_types
 class TradeAgent(BaseAgent):
@@ -17,22 +17,23 @@ class TradeAgent(BaseAgent):
         super().__init__(name, USD, ETH)
         
         self._s_since_trade = 0
-        self._s_between_trade = 3 * constants.S_PER_DAY #magic number
+        self._s_between_trade = 3 * constants.S_PER_MIN #magic number
         
-    def takeStep(self, state) -> None:
+    def takeStep(self, state, pool_agents) -> None:
         self._s_since_trade += state.ss.time_step
     
         if self._doTrade(state):
             self._s_since_trade = 0
-            self._trade(state)
+            self._trade(state, pool_agents)
 
 
     def _doTrade(self, state) -> bool:
         return self._s_since_trade >= self._s_between_trade
 
-    def _trade(self, state):
+    def _trade(self, state, pool_agents):
+        print("Trader does trade at step: ", state.tick)
         """Choose what pool to unstake and by how much. Then do the action."""
-        pool_agents = state.agents.filterByNonzeroStake(self)
-        pool_agent = random.choice(list(pool_agents.values()))
+        # pool_agents = state.agents.filterByNonzeroStake(self)
+        # pool_agent = random.choice(list(pool_agents.values()))
 
 

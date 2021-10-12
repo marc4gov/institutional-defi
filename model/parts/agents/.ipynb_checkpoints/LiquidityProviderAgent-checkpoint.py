@@ -4,10 +4,10 @@ log = logging.getLogger('marketagents')
 from enforce_typing import enforce_types # type: ignore[import]
 import random
 
-from agents.BaseAgent import BaseAgent
+from .BaseAgent import BaseAgent
 # from web3engine import bfactory, bpool, btoken, datatoken, dtfactory
 # from web3tools.web3util import toBase18
-from util import constants
+from .util import constants
                     
 @enforce_types
 class LiquidityProviderAgent(BaseAgent):

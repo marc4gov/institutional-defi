@@ -6,10 +6,10 @@ import random
 
 from .BaseAgent import BaseAgent
 from .PoolAgent import PoolAgent
-from util import constants
+from .util import constants
 # from util.constants import POOL_WEIGHT_DT, POOL_WEIGHT_OCEAN
-from web3engine import uniswappool
-from web3tools.web3util import toBase18
+from .web3engine.uniswappool import TokenAmount, Pair, UniswapPool
+from .web3tools.web3util import toBase18
         
 @enforce_types
 class TradeAgent(BaseAgent):

@@ -5,9 +5,9 @@ log = logging.getLogger('simstrategy')
 from enforce_typing import enforce_types # type: ignore[import]
 import typing
 
-from .parts.agents.util.constants import *
-from .parts.agents.util.mathutil import Range
-from .parts.agents.util.strutil import StrMixin
+from parts.agents.util.constants import *
+from parts.agents.util.mathutil import Range
+from parts.agents.util.strutil import StrMixin
     
 @enforce_types
 class SimStrategy(StrMixin):
@@ -20,13 +20,13 @@ class SimStrategy(StrMixin):
           New agents are added randomly over time.
         """
         #seconds per tick
-        self.time_step: int = S_PER_MIN
+        self.time_step: int = S_PER_HOUR
         
         #number of ticks between saves
         self.save_interval: int = 1
 
         #govern total sim time
-        max_years = 10
+        max_years = 20
         self.max_ticks: int = max_years * S_PER_YEAR / self.time_step + 10
 
         #initial # mkts
@@ -41,7 +41,7 @@ class SimStrategy(StrMixin):
         self.growth_rate_if_0_sales = -0.118
         self.max_growth_rate = 0.225
         self.tau = 0.6
-        self.agent_probabilities = [0.7,0.75,0.8,0.85,0.9,0.95]
+        
         #note: SimState now has many magic numbers, for simplicity
 
     def annualMktsGrowthRate(self, ratio_RND_to_sales: float) -> float:

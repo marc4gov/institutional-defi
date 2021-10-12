@@ -2,12 +2,6 @@ import itertools
 import requests
 
 
-        r0 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token0.token.symbol + "&tsyms=USD")
-        res0USD = r0.json()['USD']
-        r1 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token1.token.symbol + "&tsyms=USD")
-        res1USD = r1.json()['USD']
-
-
 """
 Model parameters can be set here & the model is initialized
 

@@ -109,31 +109,22 @@ class Route():
         self.name = name
                           
 # event & utility classes
+        
+class LiquidityPosition():
+    def __init__(self, lid: str, pair: Pair, liquidityTokenBalance: int):
+        self.uid = lid
+        self.pair = pair
+        self.liquidityTokenBalance = liquidityTokenBalance
+
 class User():
     def __init__(self, uid: str, liquidityPositions: [LiquidityPosition], usdSwapped: int):
         self.uid = uid
         self.liquidityPositions = liquidityPositions
         self.usdSwapped = usdSwapped
-        
-class LiquidityPosition():
-    def __init__(self, lid: str, user: User, pair: Pair, liquidityTokenBalance: int):
-        self.uid = lid
-        self.user = user
-        self.pair = pair
-        self.liquidityTokenBalance = liquidityTokenBalance
-        
-class Transaction():
-    def __init__(self, transaction_id: str, timestamp: int, mints: [Mint], burns: [Burn], swaps: [Swap]):
-        self.transaction_id = transaction_id
-        self.timestamp = timestamp
-        self.mints = mints
-        self.burns = burns
-        self.swaps = swaps
 
 class Mint():
-    def __init__(self, transaction: Transaction, timestamp: int, pair: Pair, to: User, liquidity: float,
+    def __init__(self, timestamp: int, pair: Pair, to: User, liquidity: float,
                 sender: User, amount0: float, amount1: float, feeTo: User, feeLiquidity: float):
-        self.transaction = transaction
         self.timestamp = timestamp
         self.pair = pair
         self.to = to
@@ -145,9 +136,8 @@ class Mint():
         self.feeLiquidity = feeLiquidity
         
 class Burn():
-    def __init__(self, transaction: Transaction, timestamp: int, pair: Pair, to: User, liquidity: float,
+    def __init__(self, timestamp: int, pair: Pair, to: User, liquidity: float,
                 sender: User, amount0: float, amount1: float, feeTo: User, feeLiquidity: float):
-        self.transaction = transaction
         self.timestamp = timestamp
         self.pair = pair
         self.to = to
@@ -159,9 +149,8 @@ class Burn():
         self.feeLiquidity = feeLiquidity
 
 class Swap():
-    def __init__(self, transaction: Transaction, timestamp: int, pair: Pair,
+    def __init__(self, timestamp: int, pair: Pair,
                 sender: User, amount0In: float, amount1In: float, amount0Out: float, amount1Out: float, to: User):
-        self.transaction = transaction
         self.timestamp = timestamp
         self.pair = pair
         self.sender = sender
@@ -170,6 +159,14 @@ class Swap():
         self.amount0Out = amount0Out
         self.amount1Out = amount1Out      
         self.to = to
+        
+class Transaction():
+    def __init__(self, transaction_id: str, timestamp: int, mints: [Mint], burns: [Burn], swaps: [Swap]):
+        self.transaction_id = transaction_id
+        self.timestamp = timestamp
+        self.mints = mints
+        self.burns = burns
+        self.swaps = swaps
         
         
 @enforce_types

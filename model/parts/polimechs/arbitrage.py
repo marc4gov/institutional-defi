@@ -1,18 +1,17 @@
-from .parts.action_list import *
-
 def p_arbitrage(params, substep, state_history, prev_state):
     """
-    Provide liquidity.
+    Do arbitrage.
     """
     agents = prev_state['agents']
     state = prev_state['state']
 
-    lp_agents = {k: v for k, v in agents.items() if 'Arbitrageur' in v.name}
- 
+    trade_agents = {k: v for k, v in agents.items() if 'Trader' in v.name}
+    pool_agents = {k: v for k, v in agents.items() if 'Pool' in v.name}
+    
     agent_delta = {}
 
-    for label, agent in list(lp_agents.items()):
-        agent.takeStep(state)
+    for label, agent in list(trade_agents.items()):
+        agent.takeStep(state, pool_agents)
         agent_delta[label] = agent
 
     return {'agent_delta': agent_delta }

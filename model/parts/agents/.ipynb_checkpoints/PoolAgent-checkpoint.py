@@ -5,17 +5,18 @@ from enforce_typing import enforce_types # type: ignore[import]
 import random
 
 from .BaseAgent import BaseAgent
-from .web3engine import uniswappool
+from .web3engine.uniswappool import TokenAmount, Pair, UniswapPool
 from .web3tools.web3util import toBase18
+
             
 @enforce_types
 class PoolAgent(BaseAgent):    
-    def __init__(self, name: str, pool:uniswappool.UniswapPool):
+    def __init__(self, name: str, pool: UniswapPool):
         super().__init__(name, USD=0.0, ETH=0.0)
         self._pool = pool
 
     @property
-    def pool(self) -> uniswappool.UniswapPool:
+    def pool(self) -> UniswapPool:
         return self._pool
      
         

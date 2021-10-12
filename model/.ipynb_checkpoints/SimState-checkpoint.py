@@ -4,11 +4,10 @@ log = logging.getLogger('simstate')
 from enforce_typing import enforce_types # type: ignore[import]
 from typing import Set
 
-from .SimStrategy import SimStrategy
-from .parts.stats.Kpis import KPIs
-from .parts.util import mathutil, valuation
-from .parts.util.mathutil import Range
-from .parts.util.constants import *
+from SimStrategy import SimStrategy
+from parts.agents.util import mathutil, valuation
+from parts.agents.util.mathutil import Range
+from parts.agents.util.constants import *
 
 @enforce_types
 class SimState(object):

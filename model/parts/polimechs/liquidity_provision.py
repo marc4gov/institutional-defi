@@ -1,6 +1,3 @@
-from ..parts.action_list import *
-
-
 def p_liquidity_provision(params, substep, state_history, prev_state):
     """
     Provide liquidity.
@@ -9,11 +6,12 @@ def p_liquidity_provision(params, substep, state_history, prev_state):
     state = prev_state['state']
 
     lp_agents = {k: v for k, v in agents.items() if 'Liquidity Provider' in v.name}
+    pool_agents = {k: v for k, v in agents.items() if 'Pool' in v.name}
  
     agent_delta = {}
 
     for label, agent in list(lp_agents.items()):
-        agent.takeStep(state)
+        agent.takeStep(state, pool_agents)
         agent_delta[label] = agent
 
     return {'agent_delta': agent_delta }

@@ -3,12 +3,14 @@ log = logging.getLogger('simstate')
 
 from enforce_typing import enforce_types # type: ignore[import]
 from typing import Set
+import requests
 
 from .SimStrategy import SimStrategy
-from .parts.stats.Kpis import KPIs
-from .parts.util import mathutil, valuation
-from .parts.util.mathutil import Range
-from .parts.util.constants import *
+from .parts.agents.util import mathutil, valuation
+from .parts.agents.util.mathutil import Range
+from .parts.agents.util.constants import *
+from .parts.agents.web3engine.uniswappool import Token
+from .Kpis import KPIs
 
 @enforce_types
 class SimState(object):
@@ -29,18 +31,17 @@ class SimState(object):
         #<<Note many magic numbers below, for simplicity>>
         #note: KPIs class also has some magic number
 
-        #as ecosystem improves, these parameters may change / improve
-        self._marketplace_percent_toll_to_ocean = 0.002 #magic number
         self._percent_burn: float = 0.05 #to burning, vs to DAO #magic number
 
-        self._total_OCEAN_minted: float = 0.0
-        self._total_OCEAN_burned: float = 0.0
-        self._total_OCEAN_burned_USD: float = 0.0
+        self._total_Liq_minted_White: float = 0.0
+        self._total_Liq_minted_Grey: float = 0.0
+        self._total_Liq_burned_White: float = 0.0
+        self._total_Liq_burned_Grey: float = 0.0
 
         self._speculation_valuation = 5e6 #in USD #magic number
         self._percent_increase_speculation_valuation_per_s = 0.10 / S_PER_YEAR # ""
 
-        #track certain metrics over time, so that we don't have to load
+        # #track certain metrics over time, so that we don't have to load
         self.kpis = KPIs(self.ss.time_step)
 
         log.debug("init: end")
@@ -54,16 +55,13 @@ class SimState(object):
         #update global state values: other
         self._speculation_valuation *= (1.0 + self._percent_increase_speculation_valuation_per_s * self.ss.time_step)
 
-     
-    def marketplacePercentTollToOcean(self) -> float:
-        return self._marketplace_percent_toll_to_ocean
     
     def percentToBurn(self) -> float:
         return self._percent_burn
-
-    def percentToOceanDao(self) -> float:
-        return 1.0 - self._percent_burn
     
+    def tokenPrice(self, token:Token) -> float:
+        r0 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token.symbol + "&tsyms=USD")
+        return r0.json()['USD']
 
     #==============================================================
     def OCEANprice(self) -> float:
@@ -107,9 +105,6 @@ class SimState(object):
     
     def getAgent(self, agents, name):
         return agents[name]
-
-
-
 
 
 
