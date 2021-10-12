@@ -44,7 +44,7 @@ class BaseAgent(ABC, StrMixin):
     def ETH(self) -> float:
         return self._wallet.ETH() 
     
-    def receiveUSD(self, amount: float) -> None:
+    def receiveETH(self, amount: float) -> None:
         self._wallet.depositETH(amount) 
 
     def payETH(self, amount: float) -> None:

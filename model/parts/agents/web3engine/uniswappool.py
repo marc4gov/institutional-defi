@@ -33,6 +33,12 @@ class TokenAmount():
     def __init__(self, token: Token, amount: float):
         self.token = token
         self.amount = amount
+
+    def __str__(self) -> str:
+        s = []
+        s += ["TokenAmount:"]
+        s += [f"    {self.token.symbol}: {self.amount}"]
+        return "\n".join(s)  
         
 class Pair():
     def __init__(self, token0: TokenAmount, token1: TokenAmount):
@@ -55,29 +61,40 @@ class Pair():
         return self.token1
     
     def reserveOf(self, token: Token) -> TokenAmount:
-        if token == self.token0.token:
-            return self.reserve0
+        if token.symbol == self.token0.token.symbol:
+            return self.token0
         else:
-            return self.reserve1
+            return self.token1
     
     def getOutputAmount(self, inputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
-        inputReserve = self.reserveOf(inputAmount.token).amount
-        outputtoken = self.token1.token
-        if inputAmount.token == self.token1.token:
-            outputtoken = self.token0.token
-        outputReserve = self.reserveOf(outputtoken).amount
+        
+        inputToken = self.reserveOf(inputAmount.token)
+        print("Input: ", inputToken)
+        inputReserve = inputToken.amount
+        print("inputReserve: ", inputReserve)
+        outputToken = None
+        if inputAmount.token.symbol == self.token1.token.symbol:
+            outputToken = self.token0
+        else:
+            outputToken = self.token1
+        print("Output: ", outputToken)
+        outputReserve = outputToken.amount
+        print("outputReserve: ", outputReserve)
         k = inputReserve * outputReserve
         gamma = 1 - SWAP_FEE
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
         # (Rα − ∆α) = k/(Rβ + γ∆β) => ∆α = Rα - k/(Rβ + γ∆β)
         output = outputReserve - k/(inputReserve + gamma*inputAmount.amount)
-        return (TokenAmount(outputtoken, output), [TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputtoken, outputReserve - output)])
+        print("outputAmount: ", output)
+        return (TokenAmount(outputToken.token, output), [TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputToken.token, outputReserve - output)])
 
     def getInputAmount(self, outputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
         outputReserve = self.reserveOf(outputAmount.token).amount
         inputtoken = self.token0.token
-        if outputAmount.token == self.token0.token:
+        if outputAmount.token.symbol == self.token0.token.symbol:
             inputtoken = self.token1.token
+        else:
+            inputtoken = self.token0.token
         inputReserve = self.reserveOf(inputtoken).amount
         k = inputReserve * outputReserve
         gamma = 1 - SWAP_FEE
@@ -103,7 +120,14 @@ class Pair():
             
     def getLiquidityValue(token: Token, totalSupply: TokenAmount, liquidity: TokenAmount, feeOn: bool = False) -> TokenAmount:
         return TokenAmount(token, (liquidity.amount * token.amount) / totalSupply.amount)
-                
+
+    def __str__(self):
+        s = []
+        s += ["Pair:"]
+        s += [f"  balances:"]
+        s += [f"    {self.token0.token.symbol}: {self.token0.amount}"]
+        s += [f"    {self.token1.token.symbol}: {self.token1.amount}"]
+        return "\n".join(s)             
               
 class Route():
     def __init__(self, symbol: str, name: str):
@@ -182,13 +206,11 @@ class UniswapPool():
     def __str__(self):
         s = []
         s += ["UniswapPool:"]
-        s += [f"  name={self.name}"]
-        s += ["  swapFee = %.2f%%" % (SWAP_FEE * 100.0)]
+        s += [f"  name = {self.name}"]
+        s += [f"  swapFee = %.2f%%" % (SWAP_FEE * 100.0)]
         cur_symbols = [self.pair.token0.token.symbol, self.pair.token1.token.symbol]
         s += [f"  currentTokens (as symbols) = {', '.join(cur_symbols)}"] 
-        s += [f"  balances:"]
-        s += [f"    {self.pair.token0.token.symbol}: {self.pair.reserve0().amount}"]
-        s += [f"    {self.pair.token1.token.symbol}: {self.pair.reserve1().amount}"]
+        s += [f"  {self.pair}"]
         return "\n".join(s)
 
         

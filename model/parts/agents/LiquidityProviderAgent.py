@@ -30,6 +30,19 @@ class LiquidityProviderAgent(BaseAgent):
 
     def _lpAction(self, state, pool_agents):
         print("LP agent provides liquidity at step: ", state.tick)
+
+
+        # new_amount0 = pair.token0.token.amount + tokenAmount0.amount
+        # new_amount1 = pair.token1.token.amount + tokenAmount1.amount
+        
+        # new_pair= Pair(TokenAmount(pair.token0.token, new_amount0), TokenAmount(pair.token1.token, new_amount1))
+        
+        # # should we do this?
+        # new_pair.txCount = pair.txCount + 1
+        
+        # new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidity.amount) 
+        # self._pool.pair = new_pair
+
         # pool_agents = state.agents.filterToPool().values()
         # assert pool_agents, "need pools to be able to provide liquidity"
         

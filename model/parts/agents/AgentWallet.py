@@ -62,7 +62,7 @@ class AgentWallet:
         if amt > self._ETH:
             amt = round(amt, 12)
         if amt > self._ETH:
-            raise ValueError("USD withdraw amount (%s) exceeds holdings (%s)"
+            raise ValueError("ETH withdraw amount (%s) exceeds holdings (%s)"
                              % (amt, self._ETH))
         self._ETH -= amt
 

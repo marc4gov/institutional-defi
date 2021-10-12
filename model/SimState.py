@@ -22,6 +22,9 @@ class SimState(object):
         self.ss = ss
         self.tick = 0
 
+        self.tokenA = None
+        self.tokenB = None
+        
         #used to manage names
         self._next_free_marketplace_number = 0
 

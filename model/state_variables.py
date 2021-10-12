@@ -53,6 +53,9 @@ initial_agents = {}
 # set op the Uniswap pools
 tokenA = Token(uuid.uuid4(), 'USDC', 'USDC token')
 tokenB = Token(uuid.uuid4(), 'ETH', 'Ethereum token')
+simState.tokenA = tokenA
+simState.tokenB = tokenB
+
 white_pool_pair = Pair(TokenAmount(tokenA, 200000), TokenAmount(tokenB, 100))
 grey_pool_pair = Pair(TokenAmount(tokenA, 3000000), TokenAmount(tokenB, 1500))
 
@@ -69,10 +72,10 @@ new_agents.append(PoolAgent(
     name = "Grey Pool", pool = grey_pool))
 
 new_agents.append(TradeAgent(
-    name = "Trader", USD=0.0, ETH=0.0))
+    name = "Trader", USD=100000.0, ETH=500.0))
 
 new_agents.append(LiquidityProviderAgent(
-    name = "Liquidity Provider", USD=0.0, ETH=0.0))
+    name = "Liquidity Provider", USD=20000.0, ETH=100.0))
 
 new_agents.append(BurnerAgent(
     name = "Burner", USD=0.0, ETH=0.0))

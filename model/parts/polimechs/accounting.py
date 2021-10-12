@@ -8,6 +8,7 @@ def p_accounting(params, substep, state_history, prev_state):
 
     state = prev_state['state']
     agents = prev_state['agents']
+
     state.takeStep(agents)
 
     state_delta = state
