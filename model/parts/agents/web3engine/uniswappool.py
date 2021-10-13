@@ -36,8 +36,8 @@ class TokenAmount():
 
     def __str__(self) -> str:
         s = []
-        s += ["TokenAmount:"]
-        s += [f"    {self.token.symbol}: {self.amount}"]
+        s += ["TokenAmount - "]
+        s += [f"{self.token.symbol}: {self.amount}"]
         return "\n".join(s)  
         
 class Pair():
@@ -90,19 +90,19 @@ class Pair():
 
     def getInputAmount(self, outputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
         outputReserve = self.reserveOf(outputAmount.token).amount
-        inputtoken = self.token0.token
+        inputToken = None
         if outputAmount.token.symbol == self.token0.token.symbol:
-            inputtoken = self.token1.token
+            inputToken = self.token1
         else:
-            inputtoken = self.token0.token
-        inputReserve = self.reserveOf(inputtoken).amount
+            inputToken = self.token0
+        inputReserve = inputToken.amount
         k = inputReserve * outputReserve
         gamma = 1 - SWAP_FEE
         
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
         # (Rβ + γ∆β) = k/(Rα − ∆α) => ∆β =  (k/(Rα − ∆α) - Rβ)/γ
         inputAm = (k/(outputReserve - outputAmount.amount) - inputReserve)/gamma
-        return ( TokenAmount(inputtoken, inputAm), [TokenAmount(inputtoken, inputReserve + inputAm), TokenAmount(outputAmount.token, outputReserve - outputAmount.amount)])                
+        return (TokenAmount(inputToken.token, inputAm), [TokenAmount(inputToken.token, inputReserve + inputAm), TokenAmount(outputAmount.token, outputReserve - outputAmount.amount)])                
                 
 
     def getLiquidityMinted(self, totalSupply: TokenAmount, tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) -> TokenAmount:
@@ -110,8 +110,8 @@ class Pair():
         if totalSupply.amount == 0:
             liquidity = math.sqrt(tokenAmountA.amount*tokenAmountB.amount)
         else:
-            amount0 = (tokenAmountA.amount*totalSupply.amount)/self.reserve0.amount
-            amount1 = (tokenAmountB.amount*totalSupply.amount)/self.reserve1.amount
+            amount0 = (tokenAmountA.amount*totalSupply.amount)/self.token0.amount
+            amount1 = (tokenAmountB.amount*totalSupply.amount)/self.token1.amount
             if amount0 <= amount1:
                 liquidity = amount0
             else:

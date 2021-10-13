@@ -35,20 +35,17 @@ class TradeAgent(BaseAgent):
     def _trade(self, state, pool_agents, tokenAmount: TokenAmount) -> PoolAgent:
         print("Trader does trade at step: ", state.tick)
         pool_agent = random.choice(list(pool_agents.values()))
-        output, newpairtokens = pool_agent.takeSwap(tokenAmount)
+        output, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
 
+        # adjust balances of wallet
         if tokenAmount.token.symbol == 'USDC':
             self.payUSD(tokenAmount.amount)
             self.receiveETH(output.amount)
         else:
             self.receiveUSD(output.amount)
             self.payETH(tokenAmount.amount)
-        newpair = Pair(newpairtokens[0], newpairtokens[1])
-        pool_agent._pool.pair = newpair
+        new_pair = Pair(new_pair_tokens[0], new_pair_tokens[1])
+        pool_agent._pool.pair = new_pair
         return pool_agent
-
-        """Choose what pool to unstake and by how much. Then do the action."""
-        # pool_agents = state.agents.filterByNonzeroStake(self)
-        # pool_agent = random.choice(list(pool_agents.values()))
 
 

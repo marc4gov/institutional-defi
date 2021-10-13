@@ -75,7 +75,7 @@ new_agents.append(TradeAgent(
     name = "Trader", USD=100000.0, ETH=500.0))
 
 new_agents.append(LiquidityProviderAgent(
-    name = "Liquidity Provider", USD=20000.0, ETH=100.0))
+    name = "Liquidity Provider", USD=200000.0, ETH=1000.0))
 
 new_agents.append(BurnerAgent(
     name = "Burner", USD=0.0, ETH=0.0))
