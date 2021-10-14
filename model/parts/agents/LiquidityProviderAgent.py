@@ -19,6 +19,9 @@ class LiquidityProviderAgent(BaseAgent):
     def __init__(self, name: str, USD: float, ETH: float):
         super().__init__(name, USD, ETH)
         self.liquidityToken = {}
+        self.lpDone = False
+        self.lpResult = (None, None)
+
         self._s_since_lp = 0
         self._s_between_lp = 4 * constants.S_PER_MIN #magic number
         
@@ -30,20 +33,21 @@ class LiquidityProviderAgent(BaseAgent):
             tokenAmountB = TokenAmount(state.tokenB, 1 )
             
             print("LP agent provides with: ", tokenAmountA, tokenAmountB)
-            self._provide(state, pool_agents, tokenAmountA, tokenAmountB)
+            self.lpResult = self._provide(state, pool_agents, tokenAmountA, tokenAmountB)
 
     def _doLPAction(self, state):
         return self._s_since_lp >= self._s_between_lp
 
-    def _provide(self, state, pool_agents, tokenAmountA, tokenAmountB) -> PoolAgent:
+    def _provide(self, state, pool_agents, tokenAmountA, tokenAmountB) -> Tuple[PoolAgent, float]:
         print("LP agent provides liquidity at step: ", state.tick)
 
         pool_agent = random.choice(list(pool_agents.values()))
         liquidityMinted = pool_agent.takeLiquidity(tokenAmountA, tokenAmountB)
         self.liquidityToken[pool_agent.name] = liquidityMinted
         
+        volume = tokenAmountA.amount
         # adjust balances of agent wallet
-        self.payUSD(tokenAmountA.amount)
+        self.payUSD(volume)
         self.payETH(tokenAmountB.amount)
 
         # adjust the new pool balance and liquidity
@@ -59,7 +63,7 @@ class LiquidityProviderAgent(BaseAgent):
         new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidityMinted.amount) 
         pool_agent._pool.pair = new_pair
 
-        return pool_agent
+        return (pool_agent, volume)
 
 
         

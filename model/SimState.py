@@ -24,7 +24,15 @@ class SimState(object):
 
         self.tokenA = None
         self.tokenB = None
-        
+        self.white_pool_volume_USD: float = 0.0
+        self.grey_pool_volume_USD: float = 0.0
+        self._total_Liq_minted_White: float = 0.0
+        self._total_Liq_minted_Grey: float = 0.0
+        self._total_Liq_supply_White: float = 0.0
+        self._total_Liq_supply_Grey: float = 0.0
+        self._total_Liq_burned_White: float = 0.0
+        self._total_Liq_burned_Grey: float = 0.0
+
         #used to manage names
         self._next_free_marketplace_number = 0
 
@@ -35,11 +43,6 @@ class SimState(object):
         #note: KPIs class also has some magic number
 
         self._percent_burn: float = 0.05 #to burning, vs to DAO #magic number
-
-        self._total_Liq_minted_White: float = 0.0
-        self._total_Liq_minted_Grey: float = 0.0
-        self._total_Liq_burned_White: float = 0.0
-        self._total_Liq_burned_Grey: float = 0.0
 
         self._speculation_valuation = 5e6 #in USD #magic number
         self._percent_increase_speculation_valuation_per_s = 0.10 / S_PER_YEAR # ""
@@ -108,8 +111,6 @@ class SimState(object):
     
     def getAgent(self, agents, name):
         return agents[name]
-
-
 
 
 def funcOne():

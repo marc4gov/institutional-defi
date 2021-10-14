@@ -16,11 +16,10 @@ partial_state_update_block = [
         # main policy is to provide liquidity
         'policies': {
             'liquidity_provision': p_liquidity_provision,
-            'accounting': p_accounting
         },
         'variables': {
             'agents': s_liquidity_provision,
-            'state': s_accounting
+            'state': s_liquidity_provision_state
         }
      }, 
      {
@@ -29,8 +28,17 @@ partial_state_update_block = [
             'arbitrage': p_arbitrage
         },
         'variables': {
-            'agents': s_arbitrage
+            'agents': s_arbitrage,
+            'state': s_arbitrage_state
         }
-     }
+     },
+     {
+        'policies': {
+            'accounting': p_accounting
+        },
+        'variables': {
+            'state': s_accounting
+        }
+     }, 
  
 ]

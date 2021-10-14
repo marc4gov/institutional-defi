@@ -15,37 +15,41 @@ from .web3tools.web3util import toBase18
 class TradeAgent(BaseAgent):
     def __init__(self, name: str, USD: float, ETH: float):
         super().__init__(name, USD, ETH)
-        
+        self.tradeDone = False
+        self.tradeResult = (None, None)
         self._s_since_trade = 0
         self._s_between_trade = 10 * constants.S_PER_MIN #magic number
         
-    def takeStep(self, state, pool_agents) -> Optional[Tuple]:
+    def takeStep(self, state, pool_agents) -> Tuple:
         self._s_since_trade += state.ss.time_step
     
         if self._doTrade(state):
+            self.tradeDone = True
             self._s_since_trade = 0
             tokenAmount = TokenAmount(random.choice([state.tokenA, state.tokenB]), random.randint(1, 10) )
             print("Trader trades with: ", tokenAmount)
-            return self._trade(state, pool_agents, tokenAmount)
-        return None
+            self.tradeResult = self._trade(state, pool_agents, tokenAmount)
+        return self.tradeResult
 
     def _doTrade(self, state) -> bool:
         return self._s_since_trade >= self._s_between_trade
 
-    def _trade(self, state, pool_agents, tokenAmount: TokenAmount) -> PoolAgent:
+    def _trade(self, state, pool_agents, tokenAmount: TokenAmount) -> Tuple[PoolAgent, float]:
         print("Trader does trade at step: ", state.tick)
         pool_agent = random.choice(list(pool_agents.values()))
         output, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
-
+        volume = 0.0
         # adjust balances of wallet
         if tokenAmount.token.symbol == 'USDC':
-            self.payUSD(tokenAmount.amount)
+            volume = tokenAmount.amount
+            self.payUSD(volume)
             self.receiveETH(output.amount)
         else:
-            self.receiveUSD(output.amount)
+            volume = output.amount
+            self.receiveUSD(volume)
             self.payETH(tokenAmount.amount)
         new_pair = Pair(new_pair_tokens[0], new_pair_tokens[1])
         pool_agent._pool.pair = new_pair
-        return pool_agent
+        return (pool_agent, volume)
 
 
