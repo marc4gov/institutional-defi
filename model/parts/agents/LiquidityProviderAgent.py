@@ -20,7 +20,7 @@ class LiquidityProviderAgent(BaseAgent):
         super().__init__(name, USD, ETH)
         self.liquidityToken = {}
         self.lpDone = False
-        self.lpResult = (None, None)
+        self.lpResult = (None, None, None)
 
         self._s_since_lp = 0
         self._s_between_lp = 4 * constants.S_PER_MIN #magic number
@@ -28,6 +28,7 @@ class LiquidityProviderAgent(BaseAgent):
     def takeStep(self, state, pool_agents):
         self._s_since_lp += state.ss.time_step
         if self._doLPAction(state):
+            self.lpDone = True
             self._s_since_lp = 0
             tokenAmountA = TokenAmount(state.tokenA, 2000 )
             tokenAmountB = TokenAmount(state.tokenB, 1 )
@@ -38,7 +39,7 @@ class LiquidityProviderAgent(BaseAgent):
     def _doLPAction(self, state):
         return self._s_since_lp >= self._s_between_lp
 
-    def _provide(self, state, pool_agents, tokenAmountA, tokenAmountB) -> Tuple[PoolAgent, float]:
+    def _provide(self, state, pool_agents, tokenAmountA, tokenAmountB) -> Tuple[PoolAgent, float, float]:
         print("LP agent provides liquidity at step: ", state.tick)
 
         pool_agent = random.choice(list(pool_agents.values()))
@@ -63,7 +64,7 @@ class LiquidityProviderAgent(BaseAgent):
         new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidityMinted.amount) 
         pool_agent._pool.pair = new_pair
 
-        return (pool_agent, volume)
+        return (pool_agent, volume, liquidityMinted.amount)
 
 
         
