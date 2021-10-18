@@ -69,23 +69,23 @@ class Pair():
     def getOutputAmount(self, inputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
         
         inputToken = self.reserveOf(inputAmount.token)
-        print("Input: ", inputToken)
+        # print("Input: ", inputToken)
         inputReserve = inputToken.amount
-        print("inputReserve: ", inputReserve)
+        # print("inputReserve: ", inputReserve)
         outputToken = None
         if inputAmount.token.symbol == self.token1.token.symbol:
             outputToken = self.token0
         else:
             outputToken = self.token1
-        print("Output: ", outputToken)
+        # print("Output: ", outputToken)
         outputReserve = outputToken.amount
-        print("outputReserve: ", outputReserve)
+        # print("outputReserve: ", outputReserve)
         k = inputReserve * outputReserve
         gamma = 1 - SWAP_FEE
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
         # (Rα − ∆α) = k/(Rβ + γ∆β) => ∆α = Rα - k/(Rβ + γ∆β)
         output = outputReserve - k/(inputReserve + gamma*inputAmount.amount)
-        print("outputAmount: ", output)
+        # print("outputAmount: ", output)
         return (TokenAmount(outputToken.token, output), [TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputToken.token, outputReserve - output)])
 
     def getInputAmount(self, outputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:

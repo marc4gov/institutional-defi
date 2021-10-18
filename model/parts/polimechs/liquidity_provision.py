@@ -15,17 +15,23 @@ def p_liquidity_provision(params, substep, state_history, prev_state):
     for label, agent in list(lp_agents.items()):
         # print(agent)
         agent.takeStep(state, pool_agents)
+        # providing liquidity
         if agent.lpDone:
             pool_agent = agent.lpResult[0]
-            for k,v in pool_agents.items():
-                # print(v)
-                if pool_agent.name == v.name:
-                    pool_agent_delta[k] = pool_agent
-                    state_delta[pool_agent.name] = (float(agent.lpResult[1]), float(agent.lpResult[2]))
-                    print(state_delta)
+            state_delta[pool_agent.name] = float(agent.lpResult[1])
+                    # print(state_delta)
         agent_delta[label] = agent
         agent.lpDone = False
-        agent.lpResult = (None, None, None)
+        agent.lpResult = (None, None)
+        # burning liquidity tokens
+        if agent.burnDone:
+            pool_agent = agent.burnResult[0]
+            state_delta[pool_agent.name] = - float(agent.burnResult[1])
+                    # print(state_delta)
+        agent_delta[label] = agent
+        agent.burnDone = False
+        agent.burnResult = (None, None)
+
 
     return {'agent_delta': agent_delta,
             'pool_agent_delta':  pool_agent_delta,
@@ -50,14 +56,12 @@ def s_liquidity_provision_state(params, substep, state_history, prev_state, poli
     
     for label, delta in list(policy_input['state_delta'].items()):
         if 'White' in label:
-            updated_state.white_pool_volume_USD = wp + delta[0]
-            updated_state._total_Liq_minted_White = wlm + delta[1]
-            updated_state._total_Liq_supply_White = wls + delta[1]
-            print("Updates state liq White: ", updated_state._total_Liq_minted_White)
+            updated_state._total_Liq_minted_White = wlm + delta
+            updated_state._total_Liq_supply_White = wls + delta
+            # print("Updates state liq White: ", updated_state._total_Liq_minted_White)
         else:
-            updated_state.grey_pool_volume_USD = gp + delta[0]
-            updated_state._total_Liq_minted_Grey = glm + delta[1]
-            updated_state._total_Liq_supply_Grey = gls + delta[1]
+            updated_state._total_Liq_minted_Grey = glm + delta
+            updated_state._total_Liq_supply_Grey = gls + delta
 
             # print("Updates state volume Grey: ", updated_state.grey_pool_volume_USD)
     return('state', updated_state)

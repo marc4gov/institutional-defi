@@ -14,16 +14,18 @@ from .util import constants
                     
 @enforce_types
 class LiquidityProviderAgent(BaseAgent):
-    """Provides and removes liquidity"""
+    """Provides and burns liquidity"""
     
     def __init__(self, name: str, USD: float, ETH: float):
         super().__init__(name, USD, ETH)
         self.liquidityToken = {}
         self.lpDone = False
-        self.lpResult = (None, None, None)
+        self.lpResult = (None, None)
 
         self._s_since_lp = 0
         self._s_between_lp = 4 * constants.S_PER_MIN #magic number
+        self._s_since_burn = 0
+        self._s_between_burn = 4 * constants.S_PER_MIN #magic number
         
     def takeStep(self, state, pool_agents):
         self._s_since_lp += state.ss.time_step
@@ -33,14 +35,23 @@ class LiquidityProviderAgent(BaseAgent):
             tokenAmountA = TokenAmount(state.tokenA, 2000 )
             tokenAmountB = TokenAmount(state.tokenB, 1 )
             
-            print("LP agent provides with: ", tokenAmountA, tokenAmountB)
+            # print("LP agent provides with: ", tokenAmountA, tokenAmountB)
+            self.lpResult = self._provide(state, pool_agents, tokenAmountA, tokenAmountB)
+        if self._doBurnAction(state):
+            self.burnDone = True
+            self._s_since_burn = 0
+            
+            # print("LP agent provides with: ", tokenAmountA, tokenAmountB)
             self.lpResult = self._provide(state, pool_agents, tokenAmountA, tokenAmountB)
 
     def _doLPAction(self, state):
         return self._s_since_lp >= self._s_between_lp
 
-    def _provide(self, state, pool_agents, tokenAmountA, tokenAmountB) -> Tuple[PoolAgent, float, float]:
-        print("LP agent provides liquidity at step: ", state.tick)
+    def _doBurnAction(self, state):
+        return self._s_since_burn >= self._s_between_burn
+
+    def _provide(self, state, pool_agents, tokenAmountA, tokenAmountB) -> Tuple[PoolAgent, float]:
+        # print("LP agent provides liquidity at step: ", state.tick)
 
         pool_agent = random.choice(list(pool_agents.values()))
         liquidityMinted = pool_agent.takeLiquidity(tokenAmountA, tokenAmountB)
@@ -51,6 +62,53 @@ class LiquidityProviderAgent(BaseAgent):
         self.payUSD(volume)
         self.payETH(tokenAmountB.amount)
 
+        # # adjust the new pool balance and liquidity
+        # pair = pool_agent._pool.pair
+        # new_amount0 = pair.token0.amount + tokenAmountA.amount
+        # new_amount1 = pair.token1.amount + tokenAmountB.amount
+        
+        # new_pair= Pair(TokenAmount(pair.token0.token, new_amount0), TokenAmount(pair.token1.token, new_amount1))
+        
+        # # should we do this?
+        # new_pair.txCount = pair.txCount + 1
+        
+        # new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidityMinted.amount) 
+        pool_agent._pool.pair = self._adjustPoolBalance(pool_agent, tokenAmountA, tokenAmountB, liquidityMinted)
+
+        return (pool_agent, liquidityMinted.amount)
+
+    def _burn(self, state, pool_agents, liquidityAmount) -> Tuple[PoolAgent, float]:
+        print("LP agent burns liquidity at step: ", state.tick)
+
+        pool_agent = random.choice(list(pool_agents.values()))
+        
+        pair = pool_agent._pool.pair
+        pool_agent_liquidity = pair.liquidityToken
+
+        volume = liquidityAmount.amount
+        share = volume/pool_agent_liquidity.amount
+        usd_share = share * pair.token0.amount
+        eth_share = share * pair.token1.amount
+        # adjust balances of agent wallet
+        self.receiveUSD(usd_share)
+        self.receiveETH(eth_share)
+
+        # # adjust the new pool balance and liquidity
+        # pair = pool_agent._pool.pair
+        # new_amount0 = pair.token0.amount - usd_share
+        # new_amount1 = pair.token1.amount - eth_share
+        
+        # new_pair= Pair(TokenAmount(pair.token0.token, new_amount0), TokenAmount(pair.token1.token, new_amount1))
+        
+        # # should we do this?
+        # new_pair.txCount = pair.txCount + 1
+        
+        # new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount - liquidityAmount.amount) 
+        # pool_agent._pool.pair = new_pair
+        pool_agent._pool.pair = self._adjustPoolBalance(pool_agent, TokenAmount(pair.token0.token, - usd_share), TokenAmount(pair.token1.token, - eth_share), - liquidityAmount)
+        return (pool_agent, liquidityAmount.amount)
+
+    def _adjustPoolBalance(pool_agent: PoolAgent, tokenAmountA, tokenAmountB, liquidityAmount, burn=False) -> Pair:
         # adjust the new pool balance and liquidity
         pair = pool_agent._pool.pair
         new_amount0 = pair.token0.amount + tokenAmountA.amount
@@ -61,11 +119,8 @@ class LiquidityProviderAgent(BaseAgent):
         # should we do this?
         new_pair.txCount = pair.txCount + 1
         
-        new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidityMinted.amount) 
-        pool_agent._pool.pair = new_pair
-
-        return (pool_agent, volume, liquidityMinted.amount)
-
+        new_pair.liquidityToken = TokenAmount(pair.liquidityToken.token, pair.liquidityToken.amount + liquidityAmount.amount) 
+        return new_pair
 
         
             

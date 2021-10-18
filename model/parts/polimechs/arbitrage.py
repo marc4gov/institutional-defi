@@ -25,7 +25,7 @@ def p_arbitrage(params, substep, state_history, prev_state):
                 if pool_agent.name == v.name:
                     pool_agent_delta[k] = pool_agent
                     state_delta[pool_agent.name] = float(agent.tradeResult[1])
-                    print('Volume: ', agent.tradeResult[1])
+                    # print('Volume: ', agent.tradeResult[1])
         agent_delta[label] = agent
         agent.tradeDone = False
         agent.tradeResult = (None, None)

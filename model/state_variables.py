@@ -71,11 +71,15 @@ new_agents.append(PoolAgent(
 new_agents.append(PoolAgent(
     name = "Grey Pool", pool = grey_pool))
 
-new_agents.append(TradeAgent(
-    name = "Trader", USD=100000.0, ETH=500.0))
+for i in range(20):
+    new_agents.append(TradeAgent(
+        name = "Trader " + names.get_first_name(), USD=100000.0, ETH=500.0))
+    i += 1
 
-new_agents.append(LiquidityProviderAgent(
-    name = "Liquidity Provider", USD=200000.0, ETH=1000.0))
+for i in range(10):
+    new_agents.append(LiquidityProviderAgent(
+        name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0))
+    i += 1
 
 new_agents.append(BurnerAgent(
     name = "Burner", USD=0.0, ETH=0.0))

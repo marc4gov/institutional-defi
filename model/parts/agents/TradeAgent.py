@@ -27,7 +27,7 @@ class TradeAgent(BaseAgent):
             self.tradeDone = True
             self._s_since_trade = 0
             tokenAmount = TokenAmount(random.choice([state.tokenA, state.tokenB]), random.randint(1, 10) )
-            print("Trader trades with: ", tokenAmount)
+            # print("Trader trades with: ", tokenAmount)
             self.tradeResult = self._trade(state, pool_agents, tokenAmount)
         return self.tradeResult
 
@@ -35,7 +35,7 @@ class TradeAgent(BaseAgent):
         return self._s_since_trade >= self._s_between_trade
 
     def _trade(self, state, pool_agents, tokenAmount: TokenAmount) -> Tuple[PoolAgent, float]:
-        print("Trader does trade at step: ", state.tick)
+        # print("Trader does trade at step: ", state.tick)
         pool_agent = random.choice(list(pool_agents.values()))
         output, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
         volume = 0.0

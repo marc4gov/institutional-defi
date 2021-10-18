@@ -10,6 +10,7 @@ def p_accounting(params, substep, state_history, prev_state):
     agents = prev_state['agents']
 
     state.takeStep(agents)
+    print(state.tick)
 
     state_delta = state
 

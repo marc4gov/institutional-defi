@@ -70,7 +70,7 @@ class AgentWallet:
     #===================================================================
     def __str__(self) -> str:
         s = []
-        s += ["AgentWallet={\n"]
+        s += ["AgentWallet={"]
         s += ['USD=%s' % asCurrency(self.USD())]
         s += ['; ETH=%.6f' % self.ETH()]
         s += [" /AgentWallet}"]
