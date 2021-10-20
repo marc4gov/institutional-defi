@@ -10,7 +10,6 @@ from .parts.agents.util import mathutil, valuation
 from .parts.agents.util.mathutil import Range
 from .parts.agents.util.constants import *
 from .parts.agents.web3engine.uniswappool import Token
-from .Kpis import KPIs
 
 @enforce_types
 class SimState(object):
@@ -47,16 +46,11 @@ class SimState(object):
         self._speculation_valuation = 5e6 #in USD #magic number
         self._percent_increase_speculation_valuation_per_s = 0.10 / S_PER_YEAR # ""
 
-        # #track certain metrics over time, so that we don't have to load
-        self.kpis = KPIs(self.ss.time_step)
-
         log.debug("init: end")
             
     def takeStep(self, agents) -> None:
         """This happens once per tick"""
         self.tick += 1
-        #update global state values: revenue, valuation
-        self.kpis.takeStep(self, agents)
 
         #update global state values: other
         self._speculation_valuation *= (1.0 + self._percent_increase_speculation_valuation_per_s * self.ss.time_step)
@@ -91,26 +85,6 @@ class SimState(object):
         return self._speculation_valuation
         
     #==============================================================
-    def OCEANsupply(self) -> float:
-        """Current OCEAN token supply"""
-        return self.initialOCEAN() \
-            + self.totalOCEANminted() \
-            - self.totalOCEANburned()
-        
-    def initialOCEAN(self) -> float:
-        return INIT_OCEAN_SUPPLY
-        
-    def totalOCEANminted(self) -> float:
-        return self._total_OCEAN_minted
-        
-    def totalOCEANburned(self) -> float:
-        return self._total_OCEAN_burned
-        
-    def totalOCEANburnedUSD(self) -> float:
-        return self._total_OCEAN_burned_USD
-    
-    def getAgent(self, agents, name):
-        return agents[name]
 
 
 def funcOne():

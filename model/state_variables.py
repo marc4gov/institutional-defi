@@ -12,12 +12,7 @@ log = logging.getLogger('simstate')
 from enforce_typing import enforce_types # type: ignore[import]
 from typing import Set
 
-from .parts.agents.BaseAgent import BaseAgent
-from .parts.agents.AgentDict import AgentDict
-
-from .parts.agents.BurnerAgent import BurnerAgent
 from .parts.agents.TradeAgent import TradeAgent
-
 from .parts.agents.LiquidityProviderAgent import LiquidityProviderAgent
 from .parts.agents.PoolAgent import PoolAgent
 
@@ -42,8 +37,6 @@ OUTPUT_DIR = 'output_test'
 ss = SimStrategy()
 ss.setMaxTicks(MAX_DAYS * S_PER_DAY / ss.time_step + 1)
     
-assert hasattr(ss, 'save_interval')
-ss.save_interval = S_PER_DAY
 simState = SimState(ss)
 
 # init agents
@@ -78,11 +71,8 @@ for i in range(20):
 
 for i in range(10):
     new_agents.append(LiquidityProviderAgent(
-        name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0))
+        name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
     i += 1
-
-new_agents.append(BurnerAgent(
-    name = "Burner", USD=0.0, ETH=0.0))
 
 for agent in new_agents:
     initial_agents[agent.name] = agent

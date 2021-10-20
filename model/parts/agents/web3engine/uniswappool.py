@@ -49,10 +49,10 @@ class Pair():
         self.txCount = 1
         
     def token0Price(self) -> float:
-        return self.token1.token.amount/self.token0.token.amount
+        return self.token1.amount/self.token0.amount
     
     def token1Price(self) -> float:
-        return self.token0.token.amount/self.token1.token.amount
+        return self.token0.amount/self.token1.amount
     
     def reserve0(self) -> TokenAmount:
         return self.token0
@@ -127,6 +127,8 @@ class Pair():
         s += [f"  balances:"]
         s += [f"    {self.token0.token.symbol}: {self.token0.amount}"]
         s += [f"    {self.token1.token.symbol}: {self.token1.amount}"]
+        s += [f"    {self.liquidityToken.token.symbol}: {self.liquidityToken.amount}"]
+        
         return "\n".join(s)             
               
 class Route():

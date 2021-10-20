@@ -13,57 +13,44 @@ from .parts.agents.util.strutil import StrMixin
 class SimStrategy(StrMixin):
     
     def __init__(self):
-        """    
-        @notes
-          Costs are always in USD.
-          We want a sim to run for months.
-          New agents are added randomly over time.
-        """
-        #seconds per tick
-        self.time_step: int = S_PER_MIN
+        #seconds per time step (tick)
+        self.time_step: int = 1
         
-        #number of ticks between saves
-        self.save_interval: int = 1
+        #max # time steps (ticks) to run until
+        self.max_ticks = 100000
 
-        #govern total sim time
-        max_years = 10
-        self.max_ticks: int = max_years * S_PER_YEAR / self.time_step + 10
-
-        #initial # mkts
-        self.init_n_marketplaces = 1
-
-        #for computing annualGrowthRate() of # marketplaces, revenue/mktplace
-        #-total marketplaces' growth = (1+annualGrowthRate)^2 - 1
-        #-so, if we want upper bound of total marketplaces' growth of 50%,
-        # we need max_growth_rate = 22.5%.
-        #-and, if we want lower bound of total growth of -25%,
-        # we need growth_rate_if_0_sales = -11.8%
-        self.growth_rate_if_0_sales = -0.118
-        self.max_growth_rate = 0.225
-        self.tau = 0.6
-        self.agent_probabilities = [0.7,0.75,0.8,0.85,0.9,0.95]
-        #note: SimState now has many magic numbers, for simplicity
-
-    def annualMktsGrowthRate(self, ratio_RND_to_sales: float) -> float:
-        """
-        Growth rate for marketplaces. Starts low, and increases as
-        the ($ into R&D)/($ from sales) goes up, but w/ diminishing returns.
-
-        Modeled as an exponential decay function. 
-        -Input x: ratio_RND_to_sales
-        -Output y: growth rate
-        -Func params:
-          -self.tau: at x=tau, y has increased by 50% of its possible increase
-          -          at x=2*tau, y ... 75% ...
-          -self.growth_rate_if_0_sales 
-          -self.max_growth_rate
-        """
-        mult = self.max_growth_rate - self.growth_rate_if_0_sales
-        growth_rate: float = self.growth_rate_if_0_sales + mult * (1.0 - math.pow(0.5, ratio_RND_to_sales/self.tau))
-        return growth_rate
-
-    def setMaxTicks(self, n: int):
-        self.max_ticks = n
+    def setTimeStep(self, time_step: int):
+        """How many seconds are there in each time step (tick)?"""
+        self.time_step = time_step
+        
+    def setMaxTicks(self, max_ticks: int):
+        """What's the max # time steps (ticks) to run until?"""
+        self.max_ticks = max_ticks
+        
+    def setMaxTime(self, val: int, unit:str):
+        """Convenience function set max_ticks according to a time unit.
+        Examples:
+        val = 4, unit = 'hours' --> max time is 4 hours
+        val = 10, unit = 'years' --> max time is 10 years
+        Units may be: ticks, hours, days, months, years
+        """        
+        if unit == 'ticks':
+            max_ticks = val
+            self.max_ticks = max_ticks
+        elif unit == 'hours':
+            max_hours = val
+            self.max_ticks = (max_hours * S_PER_HOUR / self.time_step + 1)
+        elif unit == 'days':
+            max_days = val
+            self.max_ticks = (max_days * S_PER_DAY / self.time_step + 1)
+        elif unit == 'months':
+            max_months = val
+            self.max_ticks = (max_months * S_PER_MONTH / self.time_step + 1)
+        elif unit == 'years':
+            max_years = val
+            self.max_ticks = (max_years * S_PER_YEAR / self.time_step + 1)
+        else:
+            raise ValueError(unit)
 
 @enforce_types
 class Schedule(StrMixin):
