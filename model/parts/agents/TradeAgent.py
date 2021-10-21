@@ -1,4 +1,6 @@
 import logging
+
+from model.SimState import SimState
 log = logging.getLogger('marketagents')
 
 from enforce_typing import enforce_types # type: ignore[import]
@@ -24,11 +26,11 @@ class TradeAgent(BaseAgent):
         self.tradeDone = False
         self.tradeResult = (None, None)
         self.slippage_tolerance = 0.5/100
-        self.roi = random.randrange(5,10)/100
+        self.roi = random.randrange(2,5)/100
         self._s_since_trade = 0
-        self._s_between_trade = 10 * constants.S_PER_MIN #magic number
+        self._s_between_trade = random.randrange(10,15) # magic number
         
-    def takeStep(self, state, pool_agents) -> Tuple:
+    def takeStep(self, state, pool_agents):
         self._s_since_trade += state.ss.time_step
     
         if self._doTrade(state):
@@ -40,42 +42,60 @@ class TradeAgent(BaseAgent):
             
             (policy, tokenAmountA, pool_agent) = self._tradePolicy(state, white_pool_agent, grey_pool_agent)
 
-            tokenAmount = TokenAmount(random.choice([state.tokenA, state.tokenB]), random.randint(1, 10) )
-            # print("Trader trades with: ", tokenAmount)
-            self.tradeResult = self._trade(state, pool_agents, tokenAmount)
-        return self.tradeResult
+            if policy == TradePolicy.TRADE_USD_ETH_USD:
+                print("Trader trades with: ", tokenAmountA)
+                self.lpResult = self._trade(state, pool_agent, tokenAmountA)
+            if policy == TradePolicy.TRADE_ETH_USD_ETH:
+                pass
+            else:
+                pass # DO_NOTHING
 
     def _doTrade(self, state) -> bool:
         return self._s_since_trade >= self._s_between_trade
 
-    def _trade(self, state, pool_agents, tokenAmount: TokenAmount) -> Tuple[PoolAgent, float]:
+    def _trade(self, state, pool_agent: PoolAgent, tokenAmount: TokenAmount) -> Tuple[PoolAgent, float]:
         # print("Trader does trade at step: ", state.tick)
-        pool_agent = random.choice(list(pool_agents.values()))
         output, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
+        new_token0 = new_pair_tokens[0]
+        new_token1 = new_pair_tokens[1]
         volume = 0.0
         # adjust balances of wallet
-        if tokenAmount.token.symbol == state.token0.symbol:
+        if new_pair_tokens[0].token.symbol == state.tokenA.symbol:
+            new_token0 = new_pair_tokens[0]
+            new_token1 = new_pair_tokens[1]
             volume = tokenAmount.amount
             self.payUSD(volume)
             self.receiveETH(output.amount)
         else:
+            new_token0 = new_pair_tokens[1]
+            new_token1 = new_pair_tokens[0]
             volume = output.amount
             self.receiveUSD(volume)
             self.payETH(tokenAmount.amount)
-        new_pair = Pair(new_pair_tokens[0], new_pair_tokens[1])
-        pool_agent._pool.pair = new_pair
+        pool_agent._pool.pair.instantiate(new_token0, new_token1, pool_agent._pool.pair.liquidityToken)
         return (pool_agent, volume)
 
-    def _tradePolicy(self, state, white_pool_agent: PoolAgent, grey_pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
+    def _tradePolicy(self, state: SimState, white_pool_agent: PoolAgent, grey_pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
         # trade direction USD -> ETH -> USD
         white_price_usd_to_eth = white_pool_agent._pool.pair.token0Price()
         print("white_price_usd_to_eth: ", white_price_usd_to_eth)
         grey_price_usd_to_eth = grey_pool_agent._pool.pair.token0Price()
-        print("grey_price_usd_to_eth: ", white_price_usd_to_eth)
+        print("grey_price_usd_to_eth: ", grey_price_usd_to_eth)
+        ratio = white_price_usd_to_eth/grey_price_usd_to_eth
+        spread = 0.0
+        if ratio > 1:
+            spread = ratio - 1
+        else:
+            spread = 1 - ratio
+
+        print("ratio: ", white_price_usd_to_eth/grey_price_usd_to_eth)
         
-        trade_size = 0.1 * self._wallet.USD()
-        tradeAmount = TokenAmount(state.token0, trade_size)
-        if white_price_usd_to_eth/grey_price_usd_to_eth <= 0.6/100: # opportunity to swap ETH from white pool to ETH in grey pool
+        # opportunity to swap ETH from white pool to ETH in grey pool
+        if ratio <= 1 and spread >= 0.6/100: 
+            trade_size = self.slippage_tolerance * 0.07 * white_pool_agent._pool.pair.reserve1().amount
+            tradeAmount = TokenAmount(state.tokenB, trade_size)
+            print("Trade token: ", tradeAmount)
+            if self._wallet.ETH() < trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, white_pool_agent) 
             (outputAmountA, slippageA) = self._getSlippage(white_pool_agent,tradeAmount)
             print("Slippage white: ", slippageA)
             if slippageA <= self.slippage_tolerance:
@@ -86,7 +106,12 @@ class TradeAgent(BaseAgent):
                     return (TradePolicy.TRADE_USD_ETH_USD, tradeAmount, white_pool_agent)
             else:
                 return (TradePolicy.DO_NOTHING, tradeAmount, white_pool_agent)
-        if grey_price_usd_to_eth/white_price_usd_to_eth <= 0.6/100: # opportunity to swap ETH from grey pool to ETH in white pool
+        # opportunity to swap ETH from grey pool to ETH in white pool
+        if ratio > 1 and spread >= 0.6/100:
+            trade_size = self.slippage_tolerance * 0.07 * grey_pool_agent._pool.pair.reserve1().amount
+            tradeAmount = TokenAmount(state.tokenB, trade_size)
+            print("Trade token: ", tradeAmount)
+            if self._wallet.ETH() < trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent) 
             (outputAmountA, slippageA) = self._getSlippage(grey_pool_agent,tradeAmount)
             print("Slippage grey: ", slippageA)
             if slippageA <= self.slippage_tolerance:
@@ -106,14 +131,24 @@ class TradeAgent(BaseAgent):
         token0 = pair.token0
         outputAmount, new_pair_tokens = pool_agent.takeSwap(inputAmount)
         new_pair = Pair(new_pair_tokens[0], new_pair_tokens[1])
-        old_price = 0.0
+        new_price_ratio = 0.0
         if inputAmount.token.symbol == token0.token.symbol:
+            # USD
             old_price_ratio = pair.token1Price()
-            new_price_ratio = new_pair.token1Price()
+            if new_pair_tokens[0].token.symbol == token0.token.symbol:
+                new_price_ratio = new_pair.token1Price()
+            else:
+                new_price_ratio = new_pair.token0Price()
             slippage = 1 - old_price_ratio/new_price_ratio if new_price_ratio != 0 else 1
         else:
+            # ETH
             old_price_ratio = pair.token0Price()
-            new_price_ratio = new_pair.token0Price()
+            if new_pair_tokens[0].token.symbol == token0.token.symbol:
+                new_price_ratio = new_pair.token0Price()
+            else:
+                new_price_ratio = new_pair.token1Price()
+            print("old_price_ratio: ", old_price_ratio)
+            print("new_price_ratio: ", new_price_ratio)        
             slippage = 1 - old_price_ratio/new_price_ratio if new_price_ratio != 0 else 1
         return (outputAmount, slippage)
 

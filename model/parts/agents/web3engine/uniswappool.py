@@ -53,6 +53,11 @@ class Pair():
         self.token1.amount += delta1
         self.liquidityToken.amount += deltaL
 
+    def instantiate(self, token0: TokenAmount, token1: TokenAmount, liquidityAmount: TokenAmount):
+        self.token0 = token0
+        self.token1 = token1
+        self.liquidityToken = liquidityAmount
+
     def token0Price(self) -> float:
         return self.token1.amount/self.token0.amount
     

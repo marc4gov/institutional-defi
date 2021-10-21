@@ -49,8 +49,8 @@ tokenB = Token(uuid.uuid4(), 'ETH', 'Ethereum token')
 simState.tokenA = tokenA
 simState.tokenB = tokenB
 
-white_pool_pair = Pair(TokenAmount(tokenA, 200000), TokenAmount(tokenB, 100))
-grey_pool_pair = Pair(TokenAmount(tokenA, 3000000), TokenAmount(tokenB, 1500))
+white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10000))
+grey_pool_pair = Pair(TokenAmount(tokenA, 300_000_000), TokenAmount(tokenB, 145000))
 
 white_pool = UniswapPool('White pool', white_pool_pair)
 grey_pool = UniswapPool('Grey pool', grey_pool_pair)
@@ -64,15 +64,20 @@ new_agents.append(PoolAgent(
 new_agents.append(PoolAgent(
     name = "Grey Pool", pool = grey_pool))
 
-for i in range(20):
-    new_agents.append(TradeAgent(
-        name = "Trader " + names.get_first_name(), USD=100000.0, ETH=500.0))
-    i += 1
+new_agents.append(TradeAgent(
+    name = "Trader " + names.get_first_name(), USD=100000.0, ETH=500.0))
 
-for i in range(10):
-    new_agents.append(LiquidityProviderAgent(
-        name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
-    i += 1
+new_agents.append(LiquidityProviderAgent(
+    name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
+
+# for i in range(20):
+
+    # i += 1
+
+# for i in range(10):
+#     new_agents.append(LiquidityProviderAgent(
+#         name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
+#     i += 1
 
 for agent in new_agents:
     initial_agents[agent.name] = agent
