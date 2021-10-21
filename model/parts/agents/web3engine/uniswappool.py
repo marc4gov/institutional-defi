@@ -47,7 +47,12 @@ class Pair():
         liquidity = math.sqrt(token0.amount*token1.amount)
         self.liquidityToken = TokenAmount(Token(uuid.uuid4(), 'UNI-V2', 'Uniswap V2'), liquidity)
         self.txCount = 1
-        
+    
+    def update(self, delta0: float, delta1: float, deltaL:float):
+        self.token0.amount += delta0
+        self.token1.amount += delta1
+        self.liquidityToken.amount += deltaL
+
     def token0Price(self) -> float:
         return self.token1.amount/self.token0.amount
     
@@ -66,14 +71,14 @@ class Pair():
         else:
             return self.token1
     
-    def getOutputAmount(self, inputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
+    def getOutputAmount(self, inputA: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
         
-        inputToken = self.reserveOf(inputAmount.token)
+        inputToken = self.reserveOf(inputA.token)
         # print("Input: ", inputToken)
         inputReserve = inputToken.amount
         # print("inputReserve: ", inputReserve)
         outputToken = None
-        if inputAmount.token.symbol == self.token1.token.symbol:
+        if inputA.token.symbol == self.token1.token.symbol:
             outputToken = self.token0
         else:
             outputToken = self.token1
@@ -84,14 +89,14 @@ class Pair():
         gamma = 1 - SWAP_FEE
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
         # (Rα − ∆α) = k/(Rβ + γ∆β) => ∆α = Rα - k/(Rβ + γ∆β)
-        output = outputReserve - k/(inputReserve + gamma*inputAmount.amount)
+        output = outputReserve - k/(inputReserve + gamma*inputA.amount)
         # print("outputAmount: ", output)
-        return (TokenAmount(outputToken.token, output), [TokenAmount(inputAmount.token, inputReserve + inputAmount.amount), TokenAmount(outputToken.token, outputReserve - output)])
+        return (TokenAmount(outputToken.token, output), [TokenAmount(inputA.token, inputReserve + inputA.amount), TokenAmount(outputToken.token, outputReserve - output)])
 
-    def getInputAmount(self, outputAmount: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
-        outputReserve = self.reserveOf(outputAmount.token).amount
+    def getInputAmount(self, outputA: TokenAmount) -> Tuple[TokenAmount, Tuple[TokenAmount, TokenAmount]]:
+        outputReserve = self.reserveOf(outputA.token).amount
         inputToken = None
-        if outputAmount.token.symbol == self.token0.token.symbol:
+        if outputA.token.symbol == self.token0.token.symbol:
             inputToken = self.token1
         else:
             inputToken = self.token0
@@ -100,9 +105,9 @@ class Pair():
         gamma = 1 - SWAP_FEE
         
         # Transactions must satisfy (Rα − ∆α)(Rβ + γ∆β) = k
-        # (Rβ + γ∆β) = k/(Rα − ∆α) => ∆β =  (k/(Rα − ∆α) - Rβ)/γ
-        inputAm = (k/(outputReserve - outputAmount.amount) - inputReserve)/gamma
-        return (TokenAmount(inputToken.token, inputAm), [TokenAmount(inputToken.token, inputReserve + inputAm), TokenAmount(outputAmount.token, outputReserve - outputAmount.amount)])                
+        # (Rβ + γ∆β) = k/(Rα − ∆α) => ∆β = (k/(Rα − ∆α) - Rβ)/γ
+        inputAm = (k/(outputReserve - outputA.amount) - inputReserve)/gamma
+        return (TokenAmount(inputToken.token, inputAm), [TokenAmount(inputToken.token, inputReserve + inputAm), TokenAmount(outputA.token, outputReserve - outputA.amount)])                
                 
 
     def getLiquidityMinted(self, totalSupply: TokenAmount, tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) -> TokenAmount:
@@ -128,7 +133,6 @@ class Pair():
         s += [f"    {self.token0.token.symbol}: {self.token0.amount}"]
         s += [f"    {self.token1.token.symbol}: {self.token1.amount}"]
         s += [f"    {self.liquidityToken.token.symbol}: {self.liquidityToken.amount}"]
-        
         return "\n".join(s)             
               
 class Route():
