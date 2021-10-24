@@ -25,3 +25,5 @@ a.	If we change the trade frequency in either pool to 10X or 0.5X default patter
 a.	Say, do to a bug in a trader’s algorithm, there is a massive selling or buying and ETH price increases/decreases 20 pct over, say, 1 hour, how will the pools adjust in this time window and how will slippage, TVL, share of agents involved and trading volume etc as above behave in that scenario.
 7)	Simulation test case 7 – Fee impact
 a.	Simulate all the above but set trading fee to zero, default and 1 pct to analyze how the pools develop based on trading fee sensitivity
+
+In terms of trade direction, I am not sure the experiments can be made with just USD-ETH-USD trade route, as we want to observe selling ETH in the other pool so trader makes a profit. And that also makes me reflect that we need to set up some way of accounting profits for the different traders and liquidity providers, eventually I would like to implement some sort of portfolio optimization approach across several coins and LP strategies. Can this we implemented?
