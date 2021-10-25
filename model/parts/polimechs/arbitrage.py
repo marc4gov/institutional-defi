@@ -23,7 +23,7 @@ def p_arbitrage(params, substep, state_history, prev_state):
             if agent.tradeResult[1] != None:
                 pool_agent_delta[pool_agent.name] = pool_agent
                 state_delta[pool_agent.name] = float(agent.tradeResult[1])
-                    # print('Volume: ', agent.tradeResult[1])
+                # print('Volume: ', agent.tradeResult[1])
         agent_delta[label] = agent
         agent.tradeDone = False
         agent.tradeResult = (None, None)
@@ -49,8 +49,8 @@ def s_arbitrage_state(params, substep, state_history, prev_state, policy_input):
     for label, delta in list(policy_input['state_delta'].items()):
         if 'White' in label:
             updated_state.white_pool_volume_USD = wp + delta
-            # print("Updates state volume White: ", updated_state.white_pool_volume_USD)
+            # print("Updated state volume White: ", updated_state.white_pool_volume_USD)
         else:
             updated_state.grey_pool_volume_USD = gp + delta
-            # print("Updates state volume Grey: ", updated_state.grey_pool_volume_USD)
+            # print("Updated state volume Grey: ", updated_state.grey_pool_volume_USD)
     return('state', updated_state)

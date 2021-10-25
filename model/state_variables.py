@@ -13,6 +13,8 @@ from enforce_typing import enforce_types # type: ignore[import]
 from typing import Set
 
 from .parts.agents.TradeAgent import TradeAgent
+from .parts.agents.SwapAgent import SwapAgent
+from .parts.agents.WhaleAgent import WhaleAgent
 from .parts.agents.LiquidityProviderAgent import LiquidityProviderAgent
 from .parts.agents.PoolAgent import PoolAgent
 
@@ -30,6 +32,7 @@ from typing import Tuple, List, Dict
 from itertools import cycle
 from enum import Enum
 import uuid
+import random
 
 MAX_DAYS = 3660
 OUTPUT_DIR = 'output_test'
@@ -49,8 +52,8 @@ tokenB = Token(uuid.uuid4(), 'ETH', 'Ethereum token')
 simState.tokenA = tokenA
 simState.tokenB = tokenB
 
-white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10000))
-grey_pool_pair = Pair(TokenAmount(tokenA, 300_000_000), TokenAmount(tokenB, 145000))
+white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10_000))
+grey_pool_pair = Pair(TokenAmount(tokenA, 300_000_000), TokenAmount(tokenB, 145_000))
 
 white_pool = UniswapPool('White pool', white_pool_pair)
 grey_pool = UniswapPool('Grey pool', grey_pool_pair)
@@ -64,20 +67,27 @@ new_agents.append(PoolAgent(
 new_agents.append(PoolAgent(
     name = "Grey Pool", pool = grey_pool))
 
-new_agents.append(TradeAgent(
-    name = "Trader " + names.get_first_name(), USD=100000.0, ETH=500.0))
+white_pool_only = False
+for i in range(30):
+    new_agents.append(TradeAgent(
+        name = "Trader " + names.get_first_name(), USD=200_000.0 * random.randrange(50,90)/100, ETH=1000.0 * random.randrange(50,90)/100))
+    i += 1
 
-new_agents.append(LiquidityProviderAgent(
-    name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
+for i in range(20):
+    if i > 15:
+        white_pool_only = True
+    new_agents.append(SwapAgent(
+    name = "Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
+    i += 1
 
-# for i in range(20):
+new_agents.append(WhaleAgent(
+    name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))
 
-    # i += 1
+for i in range(20):
+    new_agents.append(LiquidityProviderAgent(
+        name = "Liquidity Provider " + names.get_first_name(), USD=200_000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
+    i += 1
 
-# for i in range(10):
-#     new_agents.append(LiquidityProviderAgent(
-#         name = "Liquidity Provider " + names.get_first_name(), USD=200000.0, ETH=1000.0, white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
-#     i += 1
 
 for agent in new_agents:
     initial_agents[agent.name] = agent
