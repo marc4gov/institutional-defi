@@ -2,6 +2,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+
+def make_df(experiment, pool=True, pool_agent='White Pool', agent='Trader'):
+  agents_df = experiment.agents
+  ldf = pd.concat([agents_df,experiment.timestep], axis=1)
+  pdf = ldf.agents.apply(pd.Series)
+
+  if pool:
+    for column in pdf:
+      df2 = pd.DataFrame([vars(f) for f in pdf[pool_agent]])
+      df3 = pd.DataFrame([vars(f) for f in df2._pool])
+      df4 = pd.DataFrame([vars(f) for f in df3.pair])
+      df5 = pd.DataFrame([vars(f) for f in df4.token0])
+      df6 = pd.DataFrame([vars(f) for f in df4.token1])
+    return pd.concat([df5.amount, df6.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'Timestep'])
+  else:
+    for column in pdf:
+      df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
+      df3 = pd.DataFrame([vars(f) for f in df2._wallet])
+    return pd.concat([df3._USD, df3._ETH, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'Timestep'])
+
+
 def pool_plot(experiment, pool='White Pool') -> pd.DataFrame:
     """
 For any pool 
@@ -80,3 +101,14 @@ For any agent
        
     plt.show()
 
+
+def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool'):
+  fig, ax = plt.subplots()
+  edfs = []
+  for df in dfs:
+    edf = make_df(df, pool=pool, pool_agent=pool_agent)
+    edfs.append(edf)
+  x = pd.Series(edf["Timestep"]).values
+  for ed in edfs:
+    ax.plot(x, pd.Series(ed["USD"]).values) 
+  plt.show()

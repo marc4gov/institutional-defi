@@ -10,7 +10,7 @@ from .BaseAgent import BaseAgent
 from .PoolAgent import PoolAgent
 from .util import constants
 # from util.constants import POOL_WEIGHT_DT, POOL_WEIGHT_OCEAN
-from .web3engine.uniswappool import TokenAmount, Pair
+from .web3engine.uniswappool import TokenAmount, Token, Pair
 from .web3tools.web3util import toBase18
 from enum import Enum
 
@@ -84,53 +84,43 @@ class TradeAgent(BaseAgent):
         # print("white_price_usd_to_eth: ", white_price_usd_to_eth)
         grey_price_usd_to_eth = grey_pool_agent._pool.pair.token0Price()
         # print("grey_price_usd_to_eth: ", grey_price_usd_to_eth)
-        ratio = white_price_usd_to_eth/grey_price_usd_to_eth
-        spread = 0.0
-        if ratio > 1:
-            spread = ratio - 1
-        else:
-            spread = 1 - ratio
-
-        # print("price ratio usd/eth wp/gp: ", white_price_usd_to_eth/grey_price_usd_to_eth)
+        white_price_eth_to_usd = white_pool_agent._pool.pair.token1Price()
+        # print("white_price_usd_to_eth: ", white_price_usd_to_eth)
+        grey_price_eth_to_usd = grey_pool_agent._pool.pair.token1Price()
+        # print("grey_price_usd_to_eth: ", grey_price_usd_to_eth)
+        ratio_usd_to_eth = white_price_usd_to_eth/grey_price_usd_to_eth
+        ratio_eth_to_usd = white_price_eth_to_usd/grey_price_eth_to_usd
         
+        spread = 0.0
+        if ratio_usd_to_eth > 1:
+            spread = ratio_usd_to_eth - 1
+        # else:
+        #     spread = 1 - ratio_usd_to_eth
+
         tradeAmount = TokenAmount(state.tokenB, 0.0)
         # opportunity to swap ETH from white pool to ETH in grey pool
         if ratio <= 1 and spread >= 0.6/100: 
             # what is the optimal trade_size?
-            trade_size_wp = random.normalvariate(1.0, 0.1)
-            trade_size_gp = random.normalvariate(10.0, 1.0)
-            # trade_size = self.slippage_tolerance * 0.07 * white_pool_agent._pool.pair.reserve1().amount # 0.07 is just a ramdom choice to have some trades going
-            tradeAmount_wp = TokenAmount(state.tokenB, trade_size_wp)
-            # print("Trade token: ", tradeAmount)
-            if self._wallet.ETH() < trade_size_wp: return (TradePolicy.DO_NOTHING, tradeAmount_wp, white_pool_agent) 
-            (outputAmountA, slippageA) = self._getSlippage(white_pool_agent,tradeAmount_wp)
-            # print("Slippage white: ", slippageA)
-            if slippageA <= self.slippage_tolerance:
-                (outputAmountB, slippageB) = self._getSlippage(grey_pool_agent, outputAmountA)
-                profit = (outputAmountB.amount - trade_size_wp)/trade_size_wp
-                # print("Profit: ", profit)
-                if profit >= self.roi:
-                    return (TradePolicy.TRADE_USD, tradeAmount, white_pool_agent)
-            else:
-                return (TradePolicy.DO_NOTHING, tradeAmount, white_pool_agent)
+            return self._executeTrade(state.tokenB, white_pool_agent)
         # opportunity to swap ETH from grey pool to ETH in white pool
         if ratio > 1 and spread >= 0.6/100:
-            trade_size = self.slippage_tolerance * 0.07 * grey_pool_agent._pool.pair.reserve1().amount
-            tradeAmount = TokenAmount(state.tokenB, trade_size)
-            # print("Trade token: ", tradeAmount)
-            if self._wallet.ETH() < trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent) 
-            (outputAmountA, slippageA) = self._getSlippage(grey_pool_agent,tradeAmount)
-            # print("Slippage grey: ", slippageA)
-            if slippageA <= self.slippage_tolerance:
-                (outputAmountB, slippageB) = self._getSlippage(white_pool_agent, outputAmountA)
-                profit = (outputAmountB.amount - trade_size)/trade_size
-                # print("Profit: ", profit)
-                if profit >= self.roi:
-                    return (TradePolicy.TRADE_USD, tradeAmount, grey_pool_agent)
-            else:
-                return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent)
+            return self._executeTrade(state.tokenB, grey_pool_agent)
         return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent)
 
+    def _executeTrade(self, token: Token, pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
+        trade_size = random.normalvariate(1.0, 0.5)
+        tradeAmount = TokenAmount(token, trade_size)
+        # print("Trade token: ", tradeAmount)
+        if self._wallet.ETH() < trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, pool_agent) 
+        (outputAmount, slippage) = self._getSlippage(pool_agent,tradeAmount)
+        # print("Slippage: ", slippage)
+        if slippage <= self.slippage_tolerance:
+            profit = (outputAmount.amount - trade_size)/trade_size
+            # print("Profit: ", profit)
+            if profit >= self.roi:
+                return (TradePolicy.TRADE, tradeAmount, pool_agent)
+        else:
+            return (TradePolicy.DO_NOTHING, tradeAmount, pool_agent)
 
     def _getSlippage(self, pool_agent: PoolAgent, inputAmount: TokenAmount) -> Tuple[TokenAmount, float]:
         slippage = 0.0
