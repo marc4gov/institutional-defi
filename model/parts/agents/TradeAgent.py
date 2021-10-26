@@ -4,6 +4,7 @@ from model.SimState import SimState
 log = logging.getLogger('marketagents')
 
 from enforce_typing import enforce_types # type: ignore[import]
+import numpy as np
 import random
 from typing import Tuple, Optional
 from .BaseAgent import BaseAgent
@@ -22,7 +23,7 @@ class TradePolicy(Enum):
 
 @enforce_types
 class TradeAgent(BaseAgent):
-    def __init__(self, name: str, USD: float, ETH: float, wp=False):
+    def __init__(self, name: str, USD: float, ETH: float):
         super().__init__(name, USD, ETH)
         self.tradeDone = False
         self.tradeResult = (None, None)
@@ -38,18 +39,15 @@ class TradeAgent(BaseAgent):
         if self._doTrade(state):
             self.tradeDone = True
             self._s_since_trade = 0
-    
             white_pool_agent = pool_agents['White Pool']
             grey_pool_agent = pool_agents['Grey Pool']
-            
-            (policy, tokenAmountA, pool_agent) = self._tradePolicy(state, white_pool_agent, grey_pool_agent)
-
+            (policy, tokenAmount, pool_agent) = self._tradePolicy(state, white_pool_agent, grey_pool_agent)
             if policy == TradePolicy.TRADE_USD:
                 # print(f'{self.name} trades with: ', tokenAmountA)
-                self.tradeResult = self._trade(state, pool_agent, tokenAmountA)
+                self.tradeResult = self._trade(state, pool_agent, tokenAmount)
             if policy == TradePolicy.TRADE:
                 # print(f'{self.name} swaps with: ', tokenAmountA)
-                self.tradeResult = self._trade(state, pool_agent, tokenAmountA)
+                self.tradeResult = self._trade(state, pool_agent, tokenAmount)
             else:
                 pass # DO_NOTHING
 
@@ -94,21 +92,22 @@ class TradeAgent(BaseAgent):
         spread = 0.0
         if ratio_usd_to_eth > 1:
             spread = ratio_usd_to_eth - 1
-        # else:
-        #     spread = 1 - ratio_usd_to_eth
-
+        if ratio_usd_to_eth <= 1:
+            spread = 1 - ratio_usd_to_eth
+            
         tradeAmount = TokenAmount(state.tokenB, 0.0)
         # opportunity to swap ETH from white pool to ETH in grey pool
-        if ratio <= 1 and spread >= 0.6/100: 
-            # what is the optimal trade_size?
+        if ratio_usd_to_eth <= 1 and spread >= 0.6/100: 
             return self._executeTrade(state.tokenB, white_pool_agent)
         # opportunity to swap ETH from grey pool to ETH in white pool
-        if ratio > 1 and spread >= 0.6/100:
+        if ratio_usd_to_eth > 1 and spread >= 0.6/100:
             return self._executeTrade(state.tokenB, grey_pool_agent)
         return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent)
 
     def _executeTrade(self, token: Token, pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
-        trade_size = random.normalvariate(1.0, 0.5)
+        trade_size = np.random.lognormal(1.0, 1.0)
+        if 'White Pool' in pool_agent.name:
+            trade_size = np.random.lognormal(0.1, 1.0)
         tradeAmount = TokenAmount(token, trade_size)
         # print("Trade token: ", tradeAmount)
         if self._wallet.ETH() < trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, pool_agent) 
@@ -121,6 +120,7 @@ class TradeAgent(BaseAgent):
                 return (TradePolicy.TRADE, tradeAmount, pool_agent)
         else:
             return (TradePolicy.DO_NOTHING, tradeAmount, pool_agent)
+        return (TradePolicy.DO_NOTHING, tradeAmount, pool_agent)
 
     def _getSlippage(self, pool_agent: PoolAgent, inputAmount: TokenAmount) -> Tuple[TokenAmount, float]:
         slippage = 0.0
