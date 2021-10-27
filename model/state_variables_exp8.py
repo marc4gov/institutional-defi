@@ -2,10 +2,9 @@
 Model initial state.
 """
 
-# Experiment 1 outline: Base case - IMPLEMENTED
-# We start with the 2 pools with similar, but somewhat different size pools and prices unaligned (WP 20m USD / 10k ETH; GP 30m USD / 14k ETH).
-# TradeAgents and SwapAgents perform successive trades by swapping in respective pools and trading across pools as outlined by the default trade agent policies for each pool: buy ETH at the cheaper pool, sell same amount ETH at the higher priced pool. Repeat this until price alignment.
-# At set timesteps, we observe the prices in the respective pools. They should hopefully approach one another. The plot should show price development in each pool over time to illustrate how the price of ETH expressed in USD aligns across the 2 pools.
+# Experiment 8 - Slippage observation -  NOT IMPLEMENTED
+# Slippage tolerance is set default to 0,5 pct similar to Uniswap. Now we set slippage tolerance to infinite, ie no slippage tolerance max.
+# HAX: Marc, as discussed it would require the slippage tolerance defined as variable that I can change when initialising the agent....
 
 # Dependencies
 
