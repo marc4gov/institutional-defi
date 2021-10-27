@@ -208,17 +208,17 @@ class Transaction():
         
 @enforce_types
 class UniswapPool():
-    def __init__(self, name: str, pair: Pair):
+    def __init__(self, name: str, pair: Pair, swap_fee=SWAP_FEE):
         self.name = name
         self._wallet = AgentWallet(0.0, 0.0)
         self.pair = pair
-        self.swap_fee = SWAP_FEE
+        self.swap_fee = swap_fee
 
     def __str__(self):
         s = []
         s += ["UniswapPool:"]
         s += [f"  name = {self.name}"]
-        s += [f"  swapFee = %.2f%%" % (SWAP_FEE * 100.0)]
+        s += [f"  swapFee = %.2f%%" % (self.swap_fee * 100.0)]
         cur_symbols = [self.pair.token0.token.symbol, self.pair.token1.token.symbol]
         s += [f"  currentTokens (as symbols) = {', '.join(cur_symbols)}"] 
         s += [f"  {self.pair}"]

@@ -54,10 +54,10 @@ class TradeAgent(BaseAgent):
     def _doTrade(self, state) -> bool:
         return self._s_since_trade >= self._s_between_trade
 
-    def _trade(self, state, pool_agent: PoolAgent, tokenAmount: TokenAmount) -> Tuple[PoolAgent, TokenAmount]:
+    def _trade(self, state, pool_agent: PoolAgent, tokenAmount: TokenAmount) -> Tuple[PoolAgent, Tuple[TokenAmount, TokenAmount]]:
         # print("Trader does trade at step: ", state.tick)
         # print("Token: ", tokenAmount)
-        output, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
+        outputAmount, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
         new_token0 = new_pair_tokens[0]
         new_token1 = new_pair_tokens[1]
         volume = 0.0
@@ -67,15 +67,15 @@ class TradeAgent(BaseAgent):
             new_token1 = new_pair_tokens[1]
             volume = tokenAmount.amount
             self.payUSD(volume)
-            self.receiveETH(output.amount)
+            self.receiveETH(outputAmount.amount)
         else:
             new_token0 = new_pair_tokens[1]
             new_token1 = new_pair_tokens[0]
-            volume = output.amount
+            volume = outputAmount.amount
             self.receiveUSD(volume)
             self.payETH(tokenAmount.amount)
         pool_agent._pool.pair.instantiate(new_token0, new_token1, pool_agent._pool.pair.liquidityToken)
-        return (pool_agent, tokenAmount)
+        return (pool_agent, (tokenAmount, outputAmount))
 
     def _tradePolicy(self, state: SimState, white_pool_agent: PoolAgent, grey_pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
         # trade direction USD -> ETH -> USD

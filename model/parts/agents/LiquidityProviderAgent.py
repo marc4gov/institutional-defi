@@ -102,13 +102,23 @@ class LiquidityProviderAgent(BaseAgent):
 
     def _lpPolicy(self, state, white_pool_agent: PoolAgent, grey_pool_agent: PoolAgent) -> Tuple[LPPolicy, TokenAmount, PoolAgent]:
         days_elapsed = state.tick/(state.ss.time_step * constants.S_PER_DAY)
-        expected_fees_white_per_year = 365 * white_pool_agent._pool.swap_fee * state.white_pool_volume_USD/days_elapsed
-        expected_fees_grey_per_year = 365 * grey_pool_agent._pool.swap_fee * state.grey_pool_volume_USD/days_elapsed
+        expected_fees_usd_white_per_year = 365 * white_pool_agent._pool.swap_fee * state.white_pool_volume_USD/days_elapsed
+        expected_fees_usd_grey_per_year = 365 * grey_pool_agent._pool.swap_fee * state.grey_pool_volume_USD/days_elapsed
+        expected_fees_eth_white_per_year = 365 * white_pool_agent._pool.swap_fee * state.white_pool_volume_ETH/days_elapsed
+        expected_fees_eth_grey_per_year = 365 * grey_pool_agent._pool.swap_fee * state.grey_pool_volume_ETH/days_elapsed
+
         my_volume_usd = self._wallet.USD()
+        my_volume_eth = self._wallet.ETH()
         my_liquidity = self.liquidityToken
 
-        roi_white = my_volume_usd/expected_fees_white_per_year if expected_fees_white_per_year != 0 else 0
-        roi_grey = my_volume_usd/expected_fees_grey_per_year if expected_fees_grey_per_year != 0 else 0
+        roi_white_usd = my_volume_usd/expected_fees_usd_white_per_year if expected_fees_usd_white_per_year != 0 else 0
+        roi_white_eth = my_volume_eth/expected_fees_eth_white_per_year if expected_fees_eth_white_per_year != 0 else 0
+        roi_white = roi_white_eth + roi_white_usd
+
+        roi_grey_usd = my_volume_usd/expected_fees_usd_grey_per_year if expected_fees_usd_grey_per_year != 0 else 0
+        roi_grey_eth = my_volume_usd/expected_fees_eth_grey_per_year if expected_fees_eth_grey_per_year != 0 else 0
+        roi_grey = roi_grey_eth + roi_grey_usd
+
         amount = TokenAmount(state.tokenA, my_volume_usd * random.randrange(15,20)/100)
         if max(roi_white, roi_grey) >= self.roi and my_volume_usd > self.treshold:
             if roi_white > roi_grey:
