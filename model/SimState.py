@@ -13,10 +13,10 @@ from .parts.agents.web3engine.uniswappool import Token
 
 @enforce_types
 class SimState(object):
-    
+
     def __init__(self, ss: SimStrategy):
         log.debug("init:begin")
-        
+
         #main
         self.ss = ss
         self.tick = 0
@@ -35,12 +35,12 @@ class SimState(object):
         self._total_Liq_burned_Grey: float = 0.0
 
         log.debug("init: end")
-            
+
     def takeStep(self, agents) -> None:
         """This happens once per tick"""
         self.tick += 1
-    
-    
+
+
     # def tokenPrice(self, token:Token) -> float:
     #     r0 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token.symbol + "&tsyms=USD")
     #     return r0.json()['USD']
@@ -52,23 +52,22 @@ class SimState(object):
     #                                  self.OCEANsupply())
     #     assert price > 0.0
     #     return price
-    
+
     # #==============================================================
     # def overallValuation(self) -> float: #in USD
     #     v = self.fundamentalsValuation() + \
     #         self.speculationValuation()
     #     assert v > 0.0
     #     return v
-    
+
     # def fundamentalsValuation(self) -> float: #in USD
     #     return self.kpis.valuationPS(30.0) #based on P/S=30                     #magic number
-    
+
     # def speculationValuation(self) -> float: #in USD
     #     return self._speculation_valuation
-        
+
     # #==============================================================
 
 
 def funcOne():
     return 1.0
-
