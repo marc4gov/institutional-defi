@@ -102,7 +102,7 @@ For any agent
     plt.show()
 
 
-def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader', asset="USD"):
+def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader'):
   fig, ax = plt.subplots()
   edfs = []
   for df in dfs:
@@ -110,12 +110,5 @@ def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader', as
     edfs.append(edf)
   x = pd.Series(edf["Timestep"]).values
   for ed in edfs:
-    ax.plot(x, pd.Series(ed[asset]).values) 
-  plt.xlabel('Timestep')
-  plt.ylabel(asset)
-  plt.legend()
-  if pool:
-    plt.title('Reserve ' + asset + ' for ' + pool_agent)
-  else:
-    plt.title('Volume ' + asset + ' for ' + agent)
+    ax.plot(x, pd.Series(ed["USD"]).values) 
   plt.show()
