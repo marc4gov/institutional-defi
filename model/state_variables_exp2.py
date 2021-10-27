@@ -94,7 +94,7 @@ for agent in new_agents:
     initial_agents[agent.name] = agent
     print(agent)
 
-initial_state_exp1 = {
+initial_state_exp2 = {
     'agents': initial_agents,
     'state': simState
 }

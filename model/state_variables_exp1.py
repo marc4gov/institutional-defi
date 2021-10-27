@@ -74,6 +74,21 @@ new_agents.append(PoolAgent(
 new_agents.append(PoolAgent(
     name = "Grey Pool", pool = grey_pool))
 
+white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10_000))
+grey_pool_pair = Pair(TokenAmount(tokenA, 30_000_000), TokenAmount(tokenB, 14_000))
+
+white_pool = UniswapPool('White pool', white_pool_pair)
+grey_pool = UniswapPool('Grey pool', grey_pool_pair)
+
+#Instantiate and connnect agent instances. "Wire up the circuit"
+new_agents = list()
+
+new_agents.append(PoolAgent(
+    name = "White Pool", pool = white_pool))
+
+new_agents.append(PoolAgent(
+    name = "Grey Pool", pool = grey_pool))
+
 for i in range(10):
     new_agents.append(TradeAgent(
         name = "Trader " + names.get_first_name(), USD=200_000.0 * random.randrange(50,90)/100, ETH=1000.0 * random.randrange(50,90)/100))

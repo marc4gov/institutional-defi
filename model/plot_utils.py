@@ -15,12 +15,22 @@ def make_df(experiment, pool=True, pool_agent='White Pool', agent='Trader'):
       df4 = pd.DataFrame([vars(f) for f in df3.pair])
       df5 = pd.DataFrame([vars(f) for f in df4.token0])
       df6 = pd.DataFrame([vars(f) for f in df4.token1])
-    return pd.concat([df5.amount, df6.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'Timestep'])
+      df7 = pd.DataFrame([vars(f) for f in df4.liquidityToken])
+    return pd.concat([df5.amount, df6.amount, df7.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'UNI', 'Timestep'])
   else:
     for column in pdf:
       df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
       df3 = pd.DataFrame([vars(f) for f in df2._wallet])
     return pd.concat([df3._USD, df3._ETH, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'Timestep'])
+
+
+def make_state_df(experiment):
+  state_df = experiment.state
+  ldf = pd.concat([state_df,experiment.timestep], axis=1)
+
+  for column in ldf:
+    df2 = pd.DataFrame([vars(f) for f in ldf['state']])
+  return pd.concat([df2.white_pool_volume_USD, df2.grey_pool_volume_USD, df2.white_pool_volume_ETH, df2.grey_pool_volume_ETH, experiment.timestep], axis=1, keys = ['WP_USD', 'GP_USD', 'WP_ETH', 'GP_ETH' 'Timestep'])
 
 
 def pool_plot(experiment, pool='White Pool') -> pd.DataFrame:
@@ -113,9 +123,22 @@ def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader', as
     ax.plot(x, pd.Series(ed[asset]).values) 
   plt.xlabel('Timestep')
   plt.ylabel(asset)
-  plt.legend()
   if pool:
     plt.title('Reserve ' + asset + ' for ' + pool_agent)
   else:
     plt.title('Volume ' + asset + ' for ' + agent)
   plt.show()
+
+def monte_carlo_state_plot(dfs, asset='WP_USD'):
+    fig, ax = plt.subplots()
+    edfs = []
+    for df in dfs:
+      edf = make_state_df(df)
+      edfs.append(edf)
+    x = pd.Series(edf["Timestep"]).values
+    for ed in edfs:
+      ax.plot(x, pd.Series(ed[asset]).values) 
+    plt.xlabel('Timestep')
+    plt.ylabel(asset)
+    plt.title('Volume ' + asset )
+    plt.show()

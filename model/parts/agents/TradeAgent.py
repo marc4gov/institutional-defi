@@ -23,11 +23,11 @@ class TradePolicy(Enum):
 
 @enforce_types
 class TradeAgent(BaseAgent):
-    def __init__(self, name: str, USD: float, ETH: float):
+    def __init__(self, name: str, USD: float, ETH: float, slippage_tolerance=0.005):
         super().__init__(name, USD, ETH)
         self.tradeDone = False
         self.tradeResult = (None, None)
-        self.slippage_tolerance = 0.5/100
+        self.slippage_tolerance = slippage_tolerance
         self.roi = random.randrange(2,5)/100
         self._s_since_trade = 0
         self._s_between_trade = random.randrange(30,50) # magic number
@@ -106,9 +106,9 @@ class TradeAgent(BaseAgent):
 
         tradeAmount = TokenAmount(state.tokenB, 0.0)
         
-        # if I have more than 30% USD than ETH worth of USD, trade in USD, else trade for ETH
+        # if I have more USD than ETH worth of USD, trade in USD, else trade for ETH
 
-        if self.USD() > (1 + random.randrange(20,30)/100) * grey_price_eth_to_usd * self.ETH():
+        if self.USD() < grey_price_eth_to_usd * self.ETH():
             # opportunity to swap ETH from white pool to ETH in grey pool
             if ratio_usd_to_eth <= 1 and spread_usd >= 0.6/100: 
                 return self._executeTrade(state.tokenB, white_pool_agent, grey_pool_agent)
