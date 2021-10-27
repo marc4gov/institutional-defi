@@ -22,7 +22,7 @@ def p_arbitrage(params, substep, state_history, prev_state):
             pool_agent = agent.tradeResult[0]
             if agent.tradeResult[1] != None:
                 pool_agent_delta[pool_agent.name] = pool_agent
-                state_delta[pool_agent.name] = float(agent.tradeResult[1])
+                state_delta[pool_agent.name] = agent.tradeResult[1]
                 # print('Volume: ', agent.tradeResult[1])
         agent_delta[label] = agent
         agent.tradeDone = False
@@ -43,14 +43,25 @@ def s_arbitrage(params, substep, state_history, prev_state, policy_input):
 
 def s_arbitrage_state(params, substep, state_history, prev_state, policy_input):
     updated_state = prev_state['state']
-    wp = updated_state.white_pool_volume_USD
-    gp = updated_state.grey_pool_volume_USD
-    
+    wp_usd = updated_state.white_pool_volume_USD
+    gp_usd = updated_state.grey_pool_volume_USD
+    wp_eth = updated_state.white_pool_volume_ETH
+    gp_eth = updated_state.grey_pool_volume_ETH
+
     for label, delta in list(policy_input['state_delta'].items()):
-        if 'White' in label:
-            updated_state.white_pool_volume_USD = wp + delta
-            # print("Updated state volume White: ", updated_state.white_pool_volume_USD)
+        if delta.token.symbol == 'USD':
+            if 'White' in label:
+                updated_state.white_pool_volume_USD = wp_usd + delta.amount
+                # print("Updated state volume White: ", updated_state.white_pool_volume_USD)
+            else:
+                updated_state.grey_pool_volume_USD = gp_usd + delta.amount
+                # print("Updated state volume Grey: ", updated_state.grey_pool_volume_USD)
         else:
-            updated_state.grey_pool_volume_USD = gp + delta
-            # print("Updated state volume Grey: ", updated_state.grey_pool_volume_USD)
+            if 'White' in label:
+                updated_state.white_pool_volume_ETH = wp_eth + delta.amount
+                # print("Updated state volume White: ", updated_state.white_pool_volume_USD)
+            else:
+                updated_state.grey_pool_volume_ETH = gp_eth + delta.amount
+                # print("Updated state volume Grey: ", updated_state.grey_pool_volume_USD)
+
     return('state', updated_state)

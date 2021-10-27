@@ -25,6 +25,8 @@ class SimState(object):
         self.tokenB = None
         self.white_pool_volume_USD: float = 0.0
         self.grey_pool_volume_USD: float = 0.0
+        self.white_pool_volume_ETH: float = 0.0
+        self.grey_pool_volume_ETH: float = 0.0
         self._total_Liq_minted_White: float = 0.0
         self._total_Liq_minted_Grey: float = 0.0
         self._total_Liq_supply_White: float = 0.0
@@ -32,59 +34,39 @@ class SimState(object):
         self._total_Liq_burned_White: float = 0.0
         self._total_Liq_burned_Grey: float = 0.0
 
-        #used to manage names
-        self._next_free_marketplace_number = 0
-
-        #used to add agents
-        self._marketplace_tick_previous_add = 0
-
-        #<<Note many magic numbers below, for simplicity>>
-        #note: KPIs class also has some magic number
-
-        self._percent_burn: float = 0.05 #to burning, vs to DAO #magic number
-
-        self._speculation_valuation = 5e6 #in USD #magic number
-        self._percent_increase_speculation_valuation_per_s = 0.10 / S_PER_YEAR # ""
-
         log.debug("init: end")
             
     def takeStep(self, agents) -> None:
         """This happens once per tick"""
         self.tick += 1
+    
+    
+    # def tokenPrice(self, token:Token) -> float:
+    #     r0 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token.symbol + "&tsyms=USD")
+    #     return r0.json()['USD']
 
-        #update global state values: other
-        self._speculation_valuation *= (1.0 + self._percent_increase_speculation_valuation_per_s * self.ss.time_step)
-
+    # #==============================================================
+    # def OCEANprice(self) -> float:
+    #     """Estimated price of $OCEAN token, in USD"""
+    #     price = valuation.OCEANprice(self.overallValuation(),
+    #                                  self.OCEANsupply())
+    #     assert price > 0.0
+    #     return price
     
-    def percentToBurn(self) -> float:
-        return self._percent_burn
+    # #==============================================================
+    # def overallValuation(self) -> float: #in USD
+    #     v = self.fundamentalsValuation() + \
+    #         self.speculationValuation()
+    #     assert v > 0.0
+    #     return v
     
-    def tokenPrice(self, token:Token) -> float:
-        r0 = requests.get("https://min-api.cryptocompare.com/data/price?fsym=" + token.symbol + "&tsyms=USD")
-        return r0.json()['USD']
-
-    #==============================================================
-    def OCEANprice(self) -> float:
-        """Estimated price of $OCEAN token, in USD"""
-        price = valuation.OCEANprice(self.overallValuation(),
-                                     self.OCEANsupply())
-        assert price > 0.0
-        return price
+    # def fundamentalsValuation(self) -> float: #in USD
+    #     return self.kpis.valuationPS(30.0) #based on P/S=30                     #magic number
     
-    #==============================================================
-    def overallValuation(self) -> float: #in USD
-        v = self.fundamentalsValuation() + \
-            self.speculationValuation()
-        assert v > 0.0
-        return v
-    
-    def fundamentalsValuation(self) -> float: #in USD
-        return self.kpis.valuationPS(30.0) #based on P/S=30                     #magic number
-    
-    def speculationValuation(self) -> float: #in USD
-        return self._speculation_valuation
+    # def speculationValuation(self) -> float: #in USD
+    #     return self._speculation_valuation
         
-    #==============================================================
+    # #==============================================================
 
 
 def funcOne():

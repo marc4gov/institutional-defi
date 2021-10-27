@@ -49,19 +49,4 @@ class BaseAgent(ABC, StrMixin):
 
     def payETH(self, amount: float) -> None:
         self._wallet.withdrawETH(amount)
-
-    #=======================================================================
-    #pool-related
-    
-#     def UNI(self, pool:unipool.UNIPool) -> float:
-#         return self._wallet.UNI(pool)
-
-#     def addLiquidity(self, amount:float, pool:unipool.UNIPool):
-#         self._wallet.addLiquidity(lp, pool)
-
-#     def removeLiquidity(self, amount:float, pool:unipool.UNIPool):
-#         self._wallet.removeLiquidity(amount, pool)
-        
-#     def swap():
-#         pass
                             

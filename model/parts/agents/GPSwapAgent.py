@@ -26,7 +26,7 @@ class GPSwapAgent(SwapAgent):
         my_usd_trade_size = np.random.lognormal(10, 1.0)
         my_eth_trade_size = np.random.lognormal(1, 1.0)
         tradeAmount = TokenAmount(state.tokenA, my_usd_trade_size)
-        if self.USD() < my_eth_trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent) 
+        if self.USD() < my_usd_trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent) 
         if random.random() < 0.5:
             tradeAmount = TokenAmount(state.tokenB, my_eth_trade_size)
             if self.ETH() < my_eth_trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent)

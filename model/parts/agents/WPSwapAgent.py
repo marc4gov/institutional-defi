@@ -22,14 +22,14 @@ class WPSwapAgent(SwapAgent):
         self._s_between_trade = random.randrange(4,5) # magic number
 
     def _tradePolicy(self, state: SimState, white_pool_agent: PoolAgent, grey_pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
-        my_usd_trade_size = np.random.lognormal(5, 1.0)
+        my_usd_trade_size = np.random.lognormal(10, 1.0)
         my_eth_trade_size = np.random.lognormal(0.1, 1.0)
         tradeAmount = TokenAmount(state.tokenA, my_usd_trade_size)
-        if self.USD() < my_eth_trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, white_pool_agent) 
+        if self.USD() < my_usd_trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, white_pool_agent) 
         if random.random() < 0.5:
             tradeAmount = TokenAmount(state.tokenB, my_eth_trade_size)
             if self.ETH() < my_eth_trade_size: return (TradePolicy.DO_NOTHING, tradeAmount, white_pool_agent)
-            
+
         (outputAmount_white, slippage_white) = self._getSlippage(white_pool_agent,tradeAmount)
         while slippage_white > 0.02:
             tradeAmount = 0.5 * tradeAmount
