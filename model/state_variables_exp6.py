@@ -2,10 +2,8 @@
 Model initial state.
 """
 
-# Experiment 1 outline: Base case
-# We start with the 2 pools with similar, but somewhat different size pools and prices unaligned (WP 20m USD / 10k ETH; GP 30m USD / 14k ETH).
-# TradeAgents and SwapAgents perform successive trades by swapping in respective pools and trading across pools as outlined by the default trade agent policies for each pool: buy ETH at the cheaper pool, sell same amount ETH at the higher priced pool. Repeat this until price alignment.
-# At set timesteps, we observe the prices in the respective pools. They should hopefully approach one another. The plot should show price development in each pool over time to illustrate how the price of ETH expressed in USD aligns across the 2 pools.
+# Experiment 6 - Whale impact - IMPLEMENTED
+# An institutional whale enters WP as LP with 15m USD / 70k ETH token pair, what happens
 
 # Dependencies
 
@@ -89,9 +87,8 @@ for i in range(5):
     name = "White Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
     i += 1
 
-
-# new_agents.append(WhaleAgent(
-#     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))
+new_agents.append(WhaleAgent(
+     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))
 
 for agent in new_agents:
     initial_agents[agent.name] = agent

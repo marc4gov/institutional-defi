@@ -2,11 +2,11 @@
 Model initial state.
 """
 
-# Experiment 1 outline: Equilibrium simulation
-# We start with the 2 pools with unaligned randomly selected prices and perform successive trades as outlined by the default trade agent policies for each pool: buy ETH at the cheaper pool, sell same amount ETH at the higher priced pool. Repeat this until price alignment.
-# After each trade, we observe the prices in the respective pools. They should hopefully approach one another. The plot should show price development in each pool over time to illustrate how the price of ETH expressed in USD aligns across the 2 pools.
-# Swap agents do their swapping in each pool per respective policies, while only the tradeagents trade across the protocols, all per policy. No WhaleAgents, no LiquidityProviderAgents
-# HAX: I think below is ok (211027 at 10:40 CET), to be checked with Marc
+# Experiment 2 - WP reserve 10X bigger - IMPLEMENTED
+# We start with the 2 pools with very different size pools, WP 10X bigger and prices similarly unaligned (WP 300m USD / 100k ETH; GP 30m USD / 14k ETH).
+# With the slippage tolerance set at standard 0.5 pct, WP can manage much bigger trades compared to GP.
+# I imagine the white pool will dominate so, if you enter with an institutional setup that is 10x bigger than DeFi normal, does that mean institutional trading will prevail / survive? What will it take for the white pool to dominate the grey pool, can we somehow define the edge cases that can show the trade-off between cost/burden of KYC in terms of better prices/liquidity in white pool in terms of market development?
+
 
 # Dependencies
 
@@ -60,8 +60,8 @@ tokenB = Token(uuid.uuid4(), 'ETH', 'Ethereum token')
 simState.tokenA = tokenA
 simState.tokenB = tokenB
 
-white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10_000))
-grey_pool_pair = Pair(TokenAmount(tokenA, 300_000_000), TokenAmount(tokenB, 145_000))
+white_pool_pair = Pair(TokenAmount(tokenA, 300_000_000), TokenAmount(tokenB, 100_000))
+grey_pool_pair = Pair(TokenAmount(tokenA, 30_000_000), TokenAmount(tokenB, 14_000))
 
 white_pool = UniswapPool('White pool', white_pool_pair)
 grey_pool = UniswapPool('Grey pool', grey_pool_pair)

@@ -132,10 +132,15 @@ class TradeAgent(BaseAgent):
         trade_size_eth = np.random.lognormal(1.0, 1.0) # default grey pool trade size
         if 'White Pool' in pool_agent.name:
             trade_size_eth = np.random.lognormal(0.1, 1.0)
+
+        # trade_size_eth = 0.7*self.ETH()
+
         trade_size_usd = np.random.lognormal(8.0, 1.0)  # default grey pool trade size
 
         if 'White Pool' in pool_agent.name:
             trade_size_usd = np.random.lognormal(8.0, 1.0)
+
+        # trade_size_usd = 0.7*self.USD()
 
         if token.symbol == "ETH":
             tradeAmount = TokenAmount(token, trade_size_eth)

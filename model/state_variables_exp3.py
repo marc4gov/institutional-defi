@@ -2,11 +2,11 @@
 Model initial state.
 """
 
-# Experiment 1 outline: Equilibrium simulation
-# We start with the 2 pools with unaligned randomly selected prices and perform successive trades as outlined by the default trade agent policies for each pool: buy ETH at the cheaper pool, sell same amount ETH at the higher priced pool. Repeat this until price alignment.
-# After each trade, we observe the prices in the respective pools. They should hopefully approach one another. The plot should show price development in each pool over time to illustrate how the price of ETH expressed in USD aligns across the 2 pools.
-# Swap agents do their swapping in each pool per respective policies, while only the tradeagents trade across the protocols, all per policy. No WhaleAgents, no LiquidityProviderAgents
-# HAX: I think below is ok (211027 at 10:40 CET), to be checked with Marc
+# Experiment 3 - WP reserve 10X smaller - IMPLEMENTED
+# We start with the 2 pools with very different size pools, WP 10X smaller and prices similarly unaligned (WP 3m USD / 1k ETH; GP 30m USD / 14k ETH).
+# With the slippage tolerance set at standard 0.5 pct, GP can manage much bigger trades compared to WP.
+# Now the GP is much bigger. What will it mean to KPIs considering GP and WP have different tradeagent strategies?
+
 
 # Dependencies
 
@@ -60,8 +60,8 @@ tokenB = Token(uuid.uuid4(), 'ETH', 'Ethereum token')
 simState.tokenA = tokenA
 simState.tokenB = tokenB
 
-white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10_000))
-grey_pool_pair = Pair(TokenAmount(tokenA, 300_000_000), TokenAmount(tokenB, 145_000))
+white_pool_pair = Pair(TokenAmount(tokenA, 3_000_000), TokenAmount(tokenB, 1_000))
+grey_pool_pair = Pair(TokenAmount(tokenA, 30_000_000), TokenAmount(tokenB, 14_000))
 
 white_pool = UniswapPool('White pool', white_pool_pair)
 grey_pool = UniswapPool('Grey pool', grey_pool_pair)

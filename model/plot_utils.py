@@ -112,7 +112,7 @@ For any agent
     plt.show()
 
 
-def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader', asset="USD"):
+def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader'):
   fig, ax = plt.subplots()
   edfs = []
   for df in dfs:
