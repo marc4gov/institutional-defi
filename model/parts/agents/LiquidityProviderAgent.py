@@ -29,7 +29,7 @@ class LiquidityProviderAgent(BaseAgent):
         self.lpDone = False
         self.lpResult = (None, None)
         self.roi = random.randrange(10,20)/100
-        self.treshold = 1000
+        self.treshold = 10000
 
         self._s_since_lp = 0
         self._s_between_lp = random.randrange(20, 30) #magic number
@@ -115,17 +115,25 @@ class LiquidityProviderAgent(BaseAgent):
         roi_white_eth = my_volume_eth/expected_fees_eth_white_per_year if expected_fees_eth_white_per_year != 0 else 0
         roi_white = roi_white_eth + roi_white_usd
 
+        # print("roi_white" , roi_white)
         roi_grey_usd = my_volume_usd/expected_fees_usd_grey_per_year if expected_fees_usd_grey_per_year != 0 else 0
         roi_grey_eth = my_volume_usd/expected_fees_eth_grey_per_year if expected_fees_eth_grey_per_year != 0 else 0
         roi_grey = roi_grey_eth + roi_grey_usd
+        # print("roi_grey" , roi_grey)
+
+
 
         amount = TokenAmount(state.tokenA, my_volume_usd * random.randrange(15,20)/100)
-        if max(roi_white, roi_grey) >= self.roi and my_volume_usd > self.treshold:
+        # if max(roi_white, roi_grey) >= self.roi and my_volume_usd > self.treshold:
+        
+        # hack! as long as I have funds, I stake
+        if my_volume_usd > self.treshold:
             if roi_white > roi_grey:
                 return (LPPolicy.PROVIDE, amount, white_pool_agent)
             else:
                 return (LPPolicy.PROVIDE, amount, grey_pool_agent)
-        if min(roi_white, roi_grey) < self.roi:
+        # if min(roi_white, roi_grey) < self.roi:
+        else:
             if roi_white < roi_grey and my_liquidity[white_pool_agent.name].amount < self._defineLiquidityTreshold(white_pool_agent, 0.80):
                 return (LPPolicy.BURN, amount, white_pool_agent)
             if roi_white >= roi_grey and my_liquidity[grey_pool_agent.name].amount < self._defineLiquidityTreshold(grey_pool_agent, 0.80):

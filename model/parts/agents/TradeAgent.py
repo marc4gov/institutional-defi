@@ -23,14 +23,15 @@ class TradePolicy(Enum):
 
 @enforce_types
 class TradeAgent(BaseAgent):
-    def __init__(self, name: str, USD: float, ETH: float, slippage_tolerance=0.005):
+    def __init__(self, name: str, USD: float, ETH: float, trade_frequency=random.randrange(30,50), slippage_tolerance=0.005):
         super().__init__(name, USD, ETH)
         self.tradeDone = False
         self.tradeResult = (None, None)
         self.slippage_tolerance = slippage_tolerance
         self.roi = random.randrange(2,5)/100
+        self.pool_factor = 2 # factor to the swap fee of the pool to be profitable
         self._s_since_trade = 0
-        self._s_between_trade = random.randrange(30,50) # magic number
+        self._s_between_trade = trade_frequency
         
     def takeStep(self, state, pool_agents):
         self._s_since_trade += state.ss.time_step
@@ -54,7 +55,7 @@ class TradeAgent(BaseAgent):
     def _doTrade(self, state) -> bool:
         return self._s_since_trade >= self._s_between_trade
 
-    def _trade(self, state, pool_agent: PoolAgent, tokenAmount: TokenAmount) -> Tuple[PoolAgent, Tuple[TokenAmount, TokenAmount]]:
+    def _trade(self, state, pool_agent: PoolAgent, tokenAmount: TokenAmount) -> Tuple[PoolAgent, TokenAmount]:
         # print("Trader does trade at step: ", state.tick)
         # print("Token: ", tokenAmount)
         outputAmount, new_pair_tokens = pool_agent.takeSwap(tokenAmount)
@@ -75,7 +76,7 @@ class TradeAgent(BaseAgent):
             self.receiveUSD(volume)
             self.payETH(tokenAmount.amount)
         pool_agent._pool.pair.instantiate(new_token0, new_token1, pool_agent._pool.pair.liquidityToken)
-        return (pool_agent, (tokenAmount, outputAmount))
+        return (pool_agent, tokenAmount)
 
     def _tradePolicy(self, state: SimState, white_pool_agent: PoolAgent, grey_pool_agent: PoolAgent) -> Tuple[TradePolicy, TokenAmount, PoolAgent]:
         # trade direction USD -> ETH -> USD
@@ -107,20 +108,22 @@ class TradeAgent(BaseAgent):
         tradeAmount = TokenAmount(state.tokenB, 0.0)
         
         # if I have more USD than ETH worth of USD, trade in USD, else trade for ETH
+        # if self.USD() < grey_price_eth_to_usd * self.ETH():
+        # hack! I randomly trade in USD and ETH
 
-        if self.USD() < grey_price_eth_to_usd * self.ETH():
+        if random.random() < 0.5:
             # opportunity to swap ETH from white pool to ETH in grey pool
-            if ratio_usd_to_eth <= 1 and spread_usd >= 0.6/100: 
+            if ratio_usd_to_eth <= 1 and spread_usd >= white_pool_agent.pool.swap_fee * self.pool_factor: 
                 return self._executeTrade(state.tokenB, white_pool_agent, grey_pool_agent)
             # opportunity to swap ETH from grey pool to ETH in white pool
-            if ratio_usd_to_eth > 1 and spread_usd >= 0.6/100:
+            if ratio_usd_to_eth > 1 and spread_usd >= grey_pool_agent.pool.swap_fee * self.pool_factor:
                 return self._executeTrade(state.tokenB, grey_pool_agent, white_pool_agent)
         else: # trade for ETH
-            # opportunity to swap USD from grey pool to USD in grey pool
-            if ratio_eth_to_usd <= 1 and spread_eth >= 0.6/100: 
+            # opportunity to swap USD from white pool to USD in grey pool
+            if ratio_eth_to_usd <= 1 and spread_eth >= white_pool_agent.pool.swap_fee * self.pool_factor: 
                 return self._executeTrade(state.tokenA, white_pool_agent, grey_pool_agent)
-            # opportunity to swap USD from grey pool to USD in grey pool
-            if ratio_eth_to_usd > 1 and spread_eth >= 0.6/100:
+            # opportunity to swap USD from grey pool to USD in white pool
+            if ratio_eth_to_usd > 1 and spread_eth >= grey_pool_agent.pool.swap_fee * self.pool_factor:
                 return self._executeTrade(state.tokenA, grey_pool_agent, white_pool_agent)
 
         return (TradePolicy.DO_NOTHING, tradeAmount, grey_pool_agent)
@@ -133,14 +136,9 @@ class TradeAgent(BaseAgent):
         if 'White Pool' in pool_agent.name:
             trade_size_eth = np.random.lognormal(0.1, 1.0)
 
-        # trade_size_eth = 0.7*self.ETH()
-
         trade_size_usd = np.random.lognormal(8.0, 1.0)  # default grey pool trade size
-
         if 'White Pool' in pool_agent.name:
             trade_size_usd = np.random.lognormal(8.0, 1.0)
-
-        # trade_size_usd = 0.7*self.USD()
 
         if token.symbol == "ETH":
             tradeAmount = TokenAmount(token, trade_size_eth)
@@ -191,5 +189,3 @@ class TradeAgent(BaseAgent):
             # print("new_price_ratio: ", new_price_ratio)        
             slippage = 1 - old_price_ratio/new_price_ratio if new_price_ratio != 0 else 1
         return (outputAmount, slippage)
-
-

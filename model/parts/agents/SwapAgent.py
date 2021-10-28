@@ -17,8 +17,8 @@ from enum import Enum
 
 @enforce_types
 class SwapAgent(TradeAgent):
-    def __init__(self, name: str, USD: float, ETH: float):
-        super().__init__(name, USD, ETH)
+    def __init__(self, name: str, USD: float, ETH: float, trade_frequency=random.randrange(30,50), slippage_tolerance=0.005):
+        super().__init__(name, USD, ETH, trade_frequency, slippage_tolerance)
         self.roi = random.randrange(2,5)/100
         self._s_between_trade = random.randrange(4,6) # magic number
 

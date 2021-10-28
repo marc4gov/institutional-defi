@@ -49,27 +49,17 @@ def s_arbitrage_state(params, substep, state_history, prev_state, policy_input):
     gp_eth = updated_state.grey_pool_volume_ETH
 
     for label, delta in list(policy_input['state_delta'].items()):
-        if delta[0].token.symbol == 'USD':
+        if delta.token.symbol == 'USD':
             if 'White' in label:
-                updated_state.white_pool_volume_USD = wp_usd + delta[0].amount
-                updated_state.white_pool_volume_ETH = wp_eth + delta[1].amount
-
+                updated_state.white_pool_volume_USD = wp_usd + delta.amount
                 # print("Updated state volume White: ", updated_state.white_pool_volume_USD)
             else:
-                updated_state.grey_pool_volume_USD = gp_usd + delta[0].amount
-                updated_state.grey_pool_volume_ETH = gp_eth + delta[1].amount
-
+                updated_state.grey_pool_volume_USD = gp_usd + delta.amount
                 # print("Updated state volume Grey: ", updated_state.grey_pool_volume_USD)
         else:
             if 'White' in label:
-                updated_state.white_pool_volume_ETH = wp_eth + delta[0].amount
-                updated_state.white_pool_volume_USD = wp_usd + delta[1].amount
-
-                # print("Updated state volume White: ", updated_state.white_pool_volume_USD)
+                updated_state.white_pool_volume_ETH = wp_eth + delta.amount
             else:
-                updated_state.grey_pool_volume_ETH = gp_eth + delta[0].amount
-                updated_state.grey_pool_volume_USD = gp_usd + delta[1].amount
-
-                # print("Updated state volume Grey: ", updated_state.grey_pool_volume_USD)
+                updated_state.grey_pool_volume_ETH = gp_eth + delta.amount
 
     return('state', updated_state)

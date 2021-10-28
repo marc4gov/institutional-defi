@@ -18,10 +18,21 @@ def make_df(experiment, pool=True, pool_agent='White Pool', agent='Trader'):
       df7 = pd.DataFrame([vars(f) for f in df4.liquidityToken])
     return pd.concat([df5.amount, df6.amount, df7.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'UNI', 'Timestep'])
   else:
+  # if 'Provider' not in agent:
     for column in pdf:
       df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
       df3 = pd.DataFrame([vars(f) for f in df2._wallet])
     return pd.concat([df3._USD, df3._ETH, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'Timestep'])
+  # else:
+  #   for column in pdf:
+  #     df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
+  #     df3 = pd.DataFrame([vars(f) for f in df2._wallet])
+  #     df4 = pd.DataFrame([vars(f) for f in df2.liquidityToken])
+  #     df5 = pd.DataFrame([vars(f) for f in df4['White Pool']])
+  #     df6 = pd.DataFrame([vars(f) for f in df4['Grey Pool']])
+  #   return pd.concat([df3._USD, df3._ETH, df5.amount, df6.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'WP_UNI', 'GP_UNI', 'Timestep'])
+  
+
 
 
 def make_state_df(experiment):
@@ -30,7 +41,7 @@ def make_state_df(experiment):
 
   for column in ldf:
     df2 = pd.DataFrame([vars(f) for f in ldf['state']])
-  return pd.concat([df2.white_pool_volume_USD, df2.grey_pool_volume_USD, df2.white_pool_volume_ETH, df2.grey_pool_volume_ETH, experiment.timestep], axis=1, keys = ['WP_USD', 'GP_USD', 'WP_ETH', 'GP_ETH' 'Timestep'])
+  return pd.concat([df2.white_pool_volume_USD, df2.grey_pool_volume_USD, df2.white_pool_volume_ETH, df2.grey_pool_volume_ETH, ldf.timestep], axis=1, keys = ['WP_USD', 'GP_USD', 'WP_ETH', 'GP_ETH', 'Timestep'])
 
 
 def pool_plot(experiment, pool='White Pool') -> pd.DataFrame:
@@ -112,7 +123,7 @@ For any agent
     plt.show()
 
 
-def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader'):
+def monte_carlo_plot(dfs, pool=True, pool_agent='White Pool', agent='Trader', asset="USD"):
   fig, ax = plt.subplots()
   edfs = []
   for df in dfs:

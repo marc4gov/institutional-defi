@@ -2,9 +2,8 @@
 Model initial state.
 """
 
-# Experiment 7 - ETH price volatility impact - NOT IMPLEMENTED
+# Experiment 7 - ETH price volatility impact 
 # Say, due to a bug in GP traders’ algorithm so between timestep 100-1000, there is a massive selling of ETH only, how does this affect KPIs between the 2 pools
-# Marc, I suppose this may require another agent, perhaps a duplicate GP where they behave as mentioned in timestep 100-1000, else same as before?
 
 # Dependencies
 
@@ -18,7 +17,7 @@ from typing import Set
 
 from .parts.agents.TradeAgent import TradeAgent
 from .parts.agents.WPSwapAgent import WPSwapAgent
-from .parts.agents.GPSwapAgent import GPSwapAgent
+from .parts.agents.GPBugSwapAgent import GPBugSwapAgent
 
 from .parts.agents.WhaleAgent import WhaleAgent
 from .parts.agents.LiquidityProviderAgent import LiquidityProviderAgent
@@ -75,18 +74,31 @@ new_agents.append(PoolAgent(
 
 for i in range(10):
     new_agents.append(TradeAgent(
-        name = "Trader " + names.get_first_name(), USD=200_000.0 * random.randrange(50,90)/100, ETH=1000.0 * random.randrange(50,90)/100))
-    i += 1
+        name = "Trader " + names.get_first_name(), 
+        USD=200_000.0 * random.randrange(50,90)/100, 
+        ETH=1000.0 * random.randrange(50,90)/100,
+        trade_frequency=random.randrange(5,7)))
 
 for i in range(20):
-    new_agents.append(GPSwapAgent(
-    name = "Grey Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+    new_agents.append(GPBugSwapAgent(
+        name = "Grey Pool Swap Trader " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100,
+        trade_frequency=random.randrange(5,7)))
 
 for i in range(5):
     new_agents.append(WPSwapAgent(
-    name = "White Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "White Pool Swap Trader " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100,
+        trade_frequency=random.randrange(5,7)))
+
+for i in range(10):
+    new_agents.append(LiquidityProviderAgent(
+        name = "Liquidity Provider " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100, 
+        white=tokenA, grey=tokenB))
 
 
 # new_agents.append(WhaleAgent(

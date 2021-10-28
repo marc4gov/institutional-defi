@@ -20,8 +20,8 @@ def p_liquidity_provision(params, substep, state_history, prev_state):
             pool_agent = agent.lpResult[0]
             # if transaction
             if agent.lpResult[1] != None:
-                print("Tick: ", state.tick)
-                print(agent.lpResult)
+                # print("Tick: ", state.tick)
+                # print(agent.lpResult)
                 state_delta[pool_agent.name] = float(agent.lpResult[1])
                     # print(state_delta)
         agent_delta[label] = agent

@@ -2,9 +2,8 @@
 Model initial state.
 """
 
-# Experiment 8 - Slippage observation -  NOT IMPLEMENTED
+# Experiment 8 - Slippage observation
 # Slippage tolerance is set default to 0,5 pct similar to Uniswap. Now we set slippage tolerance to infinite, ie no slippage tolerance max.
-# HAX: Marc, as discussed it would require the slippage tolerance defined as variable that I can change when initialising the agent....
 
 # Dependencies
 
@@ -75,19 +74,34 @@ new_agents.append(PoolAgent(
 
 for i in range(10):
     new_agents.append(TradeAgent(
-        name = "Trader " + names.get_first_name(), USD=200_000.0 * random.randrange(50,90)/100, ETH=1000.0 * random.randrange(50,90)/100))
-    i += 1
+        name = "Trader " + names.get_first_name(), 
+        USD=200_000.0 * random.randrange(50,90)/100, 
+        ETH=1000.0 * random.randrange(50,90)/100,
+        trade_frequency=random.randrange(5,7),
+        slippage_tolerance=1))
 
 for i in range(20):
     new_agents.append(GPSwapAgent(
-    name = "Grey Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "Grey Pool Swap Trader " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100,
+        trade_frequency=random.randrange(5,7),
+        slippage_tolerance=1))
 
 for i in range(5):
     new_agents.append(WPSwapAgent(
-    name = "White Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "White Pool Swap Trader " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100,
+        trade_frequency=random.randrange(5,7),
+        slippage_tolerance=1))
 
+for i in range(10):
+    new_agents.append(LiquidityProviderAgent(
+        name = "Liquidity Provider " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100, 
+        white=tokenA, grey=tokenB))
 
 # new_agents.append(WhaleAgent(
 #     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))

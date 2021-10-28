@@ -92,18 +92,21 @@ new_agents.append(PoolAgent(
 for i in range(10):
     new_agents.append(TradeAgent(
         name = "Trader " + names.get_first_name(), USD=200_000.0 * random.randrange(50,90)/100, ETH=1000.0 * random.randrange(50,90)/100))
-    i += 1
 
 for i in range(20):
     new_agents.append(GPSwapAgent(
-    name = "Grey Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "Grey Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
 
 for i in range(5):
     new_agents.append(WPSwapAgent(
-    name = "White Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "White Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
 
+for i in range(10):
+    new_agents.append(LiquidityProviderAgent(
+        name = "Liquidity Provider " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100, 
+        white=tokenA, grey=tokenB))
 
 # new_agents.append(WhaleAgent(
 #     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))

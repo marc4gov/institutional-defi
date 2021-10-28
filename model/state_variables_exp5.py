@@ -2,7 +2,7 @@
 Model initial state.
 """
 
-# Experiment 5 - Fee impact - NOT implemented
+# Experiment 5 - Fee impact 
 # Simulate all the above but set trading fee to zero, to analyze how the pools develop based on trading fee sensitivity
 # Marc, as discussed the trading fee should be possible to set as variable in agent initialization
 
@@ -62,8 +62,8 @@ simState.tokenB = tokenB
 white_pool_pair = Pair(TokenAmount(tokenA, 20_000_000), TokenAmount(tokenB, 10_000))
 grey_pool_pair = Pair(TokenAmount(tokenA, 30_000_000), TokenAmount(tokenB, 14_000))
 
-white_pool = UniswapPool('White pool', white_pool_pair)
-grey_pool = UniswapPool('Grey pool', grey_pool_pair)
+white_pool = UniswapPool('White pool', white_pool_pair, swap_fee=0.0)
+grey_pool = UniswapPool('Grey pool', grey_pool_pair, swap_fee=0.0)
 
 #Instantiate and connnect agent instances. "Wire up the circuit"
 new_agents = list()
@@ -76,19 +76,31 @@ new_agents.append(PoolAgent(
 
 for i in range(10):
     new_agents.append(TradeAgent(
-        name = "Trader " + names.get_first_name(), USD=200_000.0 * random.randrange(50,90)/100, ETH=1000.0 * random.randrange(50,90)/100))
-    i += 1
+        name = "Trader " + names.get_first_name(), 
+        USD=200_000.0 * random.randrange(50,90)/100, 
+        ETH=1000.0 * random.randrange(50,90)/100,
+        trade_frequency=random.randrange(5,7)))
 
 for i in range(20):
     new_agents.append(GPSwapAgent(
-    name = "Grey Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "Grey Pool Swap Trader " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100,
+        trade_frequency=random.randrange(5,7)))
 
 for i in range(5):
     new_agents.append(WPSwapAgent(
-    name = "White Pool Swap Trader " + names.get_first_name(), USD=100_000 * random.randrange(30,70)/100, ETH=500.0 * random.randrange(30,70)/100))
-    i += 1
+        name = "White Pool Swap Trader " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100,
+        trade_frequency=random.randrange(5,7)))
 
+for i in range(10):
+    new_agents.append(LiquidityProviderAgent(
+        name = "Liquidity Provider " + names.get_first_name(), 
+        USD=100_000 * random.randrange(30,70)/100, 
+        ETH=500.0 * random.randrange(30,70)/100, 
+        white=tokenA, grey=tokenB))
 
 # new_agents.append(WhaleAgent(
 #     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))
