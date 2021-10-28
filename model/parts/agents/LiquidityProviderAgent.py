@@ -125,8 +125,8 @@ class LiquidityProviderAgent(BaseAgent):
 
         amount = TokenAmount(state.tokenA, my_volume_usd * random.randrange(15,20)/100)
         # if max(roi_white, roi_grey) >= self.roi and my_volume_usd > self.treshold:
-        
-        # hack! as long as I have funds, I stake
+
+        # hack! as long as I have funds, I provide liquidity
         if my_volume_usd > self.treshold:
             if roi_white > roi_grey:
                 return (LPPolicy.PROVIDE, amount, white_pool_agent)
