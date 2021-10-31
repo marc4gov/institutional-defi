@@ -18,20 +18,11 @@ def make_df(experiment, pool=True, pool_agent='White Pool', agent='Trader'):
       df7 = pd.DataFrame([vars(f) for f in df4.liquidityToken])
     return pd.concat([df5.amount, df6.amount, df7.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'UNI', 'Timestep'])
   else:
-  # if 'Provider' not in agent:
     for column in pdf:
       df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
       df3 = pd.DataFrame([vars(f) for f in df2._wallet])
     return pd.concat([df3._USD, df3._ETH, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'Timestep'])
-  # else:
-  #   for column in pdf:
-  #     df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
-  #     df3 = pd.DataFrame([vars(f) for f in df2._wallet])
-  #     df4 = pd.DataFrame([vars(f) for f in df2.liquidityToken])
-  #     df5 = pd.DataFrame([vars(f) for f in df4['White Pool']])
-  #     df6 = pd.DataFrame([vars(f) for f in df4['Grey Pool']])
-  #   return pd.concat([df3._USD, df3._ETH, df5.amount, df6.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'WP_UNI', 'GP_UNI', 'Timestep'])
-  
+
 def make_lp_df(experiment, agent='Liquidity Provider'):
   agents_df = experiment.agents
   ldf = pd.concat([agents_df,experiment.timestep], axis=1)
@@ -39,10 +30,12 @@ def make_lp_df(experiment, agent='Liquidity Provider'):
 
   for column in pdf:
     df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
-    df3 = pd.DataFrame([vars(f) for f in df2.liquidityToken['White Pool']])
-    df4 = pd.DataFrame([vars(f) for f in df2.liquidityToken['Grey Pool']])
-
-  return pd.concat([df3.amount, df4.amount, experiment.timestep], axis=1, keys = ['WP_UNI', 'GP_UNI', 'Timestep'])
+  edf = df2.liquidityToken.apply(pd.Series)
+  wp = edf['White Pool']
+  gp = edf['Grey Pool']
+  dfwp = pd.DataFrame([val.amount for val in wp])
+  dfgp = pd.DataFrame([val.amount for val in gp])
+  return pd.concat([dfwp[0], dfgp[0], experiment.timestep], axis=1, keys = ['WP_UNI', 'GP_UNI', 'Timestep'])
 
 
 def make_state_df(experiment):
@@ -162,4 +155,19 @@ def monte_carlo_state_plot(dfs, asset='WP_USD'):
     plt.xlabel('Timestep')
     plt.ylabel(asset)
     plt.title('Volume ' + asset )
+    plt.show()
+
+
+def monte_carlo_lp_plot(dfs, agent='LP', asset='WP_UNI'):
+    fig, ax = plt.subplots()
+    edfs = []
+    for df in dfs:
+      edf = make_lp_df(df, agent)
+      edfs.append(edf)
+    x = pd.Series(edf["Timestep"]).values
+    for ed in edfs:
+      ax.plot(x, pd.Series(ed[asset]).values)       
+    plt.xlabel('Timestep')
+    plt.ylabel(asset)
+    plt.title('Volume ' + asset + ' for ' + agent)
     plt.show()
