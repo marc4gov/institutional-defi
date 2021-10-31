@@ -32,7 +32,17 @@ def make_df(experiment, pool=True, pool_agent='White Pool', agent='Trader'):
   #     df6 = pd.DataFrame([vars(f) for f in df4['Grey Pool']])
   #   return pd.concat([df3._USD, df3._ETH, df5.amount, df6.amount, experiment.timestep], axis=1, keys = ['USD', 'ETH', 'WP_UNI', 'GP_UNI', 'Timestep'])
   
+def make_lp_df(experiment, agent='Liquidity Provider'):
+  agents_df = experiment.agents
+  ldf = pd.concat([agents_df,experiment.timestep], axis=1)
+  pdf = ldf.agents.apply(pd.Series)
 
+  for column in pdf:
+    df2 = pd.DataFrame([vars(f) for f in pdf[agent]])
+    df3 = pd.DataFrame([vars(f) for f in df2.liquidityToken['White Pool']])
+    df4 = pd.DataFrame([vars(f) for f in df2.liquidityToken['Grey Pool']])
+
+  return pd.concat([df3.amount, df4.amount, experiment.timestep], axis=1, keys = ['WP_UNI', 'GP_UNI', 'Timestep'])
 
 
 def make_state_df(experiment):

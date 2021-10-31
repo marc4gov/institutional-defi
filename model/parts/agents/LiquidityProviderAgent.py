@@ -65,12 +65,11 @@ class LiquidityProviderAgent(BaseAgent):
         liquidityMinted = pool_agent.takeLiquidity(tokenAmountA, tokenAmountB)
         self.liquidityToken[pool_agent.name].amount += liquidityMinted.amount
         
-        volume = tokenAmountA.amount
         # adjust balances of agent wallet
-        self.payUSD(volume)
+        self.payUSD(tokenAmountA.amount)
         self.payETH(tokenAmountB.amount)
 
-        pool_agent._pool.pair.update(volume, tokenAmountB.amount, liquidityMinted.amount)
+        pool_agent._pool.pair.update(tokenAmountA.amount, tokenAmountB.amount, liquidityMinted.amount)
 
         return (pool_agent, liquidityMinted.amount)
 

@@ -92,8 +92,8 @@ for i in range(10):
         name = "Liquidity Provider " + names.get_first_name(), 
         USD=100_000 * random.randrange(30,70)/100, 
         ETH=500.0 * random.randrange(30,70)/100, 
-        white=tokenA, grey=tokenB))
-
+        white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
+        
 for agent in new_agents:
     initial_agents[agent.name] = agent
     print(agent)

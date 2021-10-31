@@ -117,15 +117,12 @@ class Pair():
 
     def getLiquidityMinted(self, totalSupply: TokenAmount, tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) -> TokenAmount:
         liquidity = 0
-        if totalSupply.amount == 0:
-            liquidity = math.sqrt(tokenAmountA.amount*tokenAmountB.amount)
+        amount0 = (tokenAmountA.amount*totalSupply.amount)/self.token0.amount
+        amount1 = (tokenAmountB.amount*totalSupply.amount)/self.token1.amount
+        if amount0 <= amount1:
+            liquidity = amount0
         else:
-            amount0 = (tokenAmountA.amount*totalSupply.amount)/self.token0.amount
-            amount1 = (tokenAmountB.amount*totalSupply.amount)/self.token1.amount
-            if amount0 <= amount1:
-                liquidity = amount0
-            else:
-                liquidity = amount1
+            liquidity = amount1
         return TokenAmount(totalSupply.token, liquidity)
             
     def getLiquidityValue(token: Token, totalSupply: TokenAmount, liquidity: TokenAmount, feeOn: bool = False) -> TokenAmount:
