@@ -99,9 +99,10 @@ for i in range(10):
         USD=100_000 * random.randrange(30,70)/100, 
         ETH=500.0 * random.randrange(30,70)/100, 
         white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
-        
+
 new_agents.append(WhaleAgent(
-     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, white=tokenA, grey=tokenB))
+     name = "Whale Liquidity Provider " + names.get_first_name(), USD=15_000_000.0, ETH=70_000.0, 
+        white=white_pool_pair.liquidityToken.token, grey=grey_pool_pair.liquidityToken.token))
 
 for agent in new_agents:
     initial_agents[agent.name] = agent
